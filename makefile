@@ -3,6 +3,9 @@
 #
 # author Vitor Carreira
 # date 2010-09-26
+#
+# Alexandra Pedro 2131314@my.ipleiria.pt && 
+# Inês Faria 2110922@my.ipleiria.pt
 
 
 # Libraries to include (if any)

@@ -2,7 +2,7 @@
 * @file main.c
 * @brief palz – Compressor de ficheiros de texto
 * @date 10-2014
-* @author 2131314@my.ipleiria.pt && 2110922@my.ipleiria.pt
+* @author Alexandra Pedro 2131314@my.ipleiria.pt && Inês Faria 2110922@my.ipleiria.pt
 */
 
 #include <stdio.h>
@@ -29,13 +29,13 @@
 
 int main(int argc, char *argv[])
 {
-	//Tratamento dos argumentos gengetopt
+	//Gengetopt arguments
 	struct gengetopt_args_info args; 
 	cmdline_parser(argc,argv,&args);
 
 	/* Main code */
 
-	//Fim de Código
+	//End of Code
 	cmdline_parser_free(&args);
 	return 0;
 }

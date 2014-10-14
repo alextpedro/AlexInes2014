@@ -1,19 +1,21 @@
 # config.ggo
 # Config file for palz
+# Alexandra Pedro 2131314@my.ipleiria.pt 
+# Inês Faria 2110922@my.ipleiria.pt 
 
 package "palz"
 version "0.1"
-purpose "Programa de compressão/descompressão de ficheiros binários"
+purpose "Program for the compression/decompression of binary palz files."
 
 #Options
-option "decompress"	- "Descomprime o ficheiro selecionado.\n[uso: --decompress meuFicheiro]" 
+option "decompress"	- "Descompress the given file.\n[use: --decompress myFile]" 
 					string	optional typestr="<filename>"
 
-option "folder-decompress" - "Descomprime todos os ficheiros .palz numa diretoria.\n[uso: --folder-decompress minhaPasta]" 
+option "folder-decompress" - "Decompress all the .palz files in a folder.\n[use: --folder-decompress myFolder]" 
 string optional typestr="<folder>"
 
-option "compress" - "Comprime o ficheiro selecionado.\n[uso: --compress meuFicheiro]"	
+option "compress" - "Compress the selected file.\n[use: --compress myFile]"	
 string	optional typestr="<filename>"
 
-option "about" - "Para saber mais sobre o palz.\n[uso: --about]" 
+option "about" - "To know more about palz.\n[use: --about]" 
 optional
