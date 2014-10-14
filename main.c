@@ -1,8 +1,8 @@
 /**
 * @file main.c
-* @brief Description
-* @date 01-01-2006
-* @author eiYxxxxx@student.estg.ipleiria.pt
+* @brief palz – Compressor de ficheiros de texto
+* @date 10-2014
+* @author 2131314@my.ipleiria.pt && 2110922@my.ipleiria.pt
 */
 
 #include <stdio.h>
@@ -23,15 +23,20 @@
 
 #include "debug.h"
 #include "memory.h"
+#include "etapa1.h"
+#include "config.h"
+
 
 int main(int argc, char *argv[])
 {
-	/* Disable warnings */
-	(void)argc; (void)argv;
+	//Tratamento dos argumentos gengetopt
+	struct gengetopt_args_info args; 
+	cmdline_parser(argc,argv,&args);
 
 	/* Main code */
 
-
+	//Fim de Código
+	cmdline_parser_free(&args);
 	return 0;
 }
 
