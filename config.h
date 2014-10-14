@@ -39,26 +39,26 @@ struct gengetopt_args_info
 {
   const char *help_help; /**< @brief Print help and exit help description.  */
   const char *version_help; /**< @brief Print version and exit help description.  */
-  char * decompress_arg;	/**< @brief Descomprime o ficheiro selecionado.
-  [uso: --decompress meuFicheiro].  */
-  char * decompress_orig;	/**< @brief Descomprime o ficheiro selecionado.
-  [uso: --decompress meuFicheiro] original value given at command line.  */
-  const char *decompress_help; /**< @brief Descomprime o ficheiro selecionado.
-  [uso: --decompress meuFicheiro] help description.  */
-  char * folder_decompress_arg;	/**< @brief Descomprime todos os ficheiros .palz numa diretoria.
-  [uso: --folder-decompress minhaPasta].  */
-  char * folder_decompress_orig;	/**< @brief Descomprime todos os ficheiros .palz numa diretoria.
-  [uso: --folder-decompress minhaPasta] original value given at command line.  */
-  const char *folder_decompress_help; /**< @brief Descomprime todos os ficheiros .palz numa diretoria.
-  [uso: --folder-decompress minhaPasta] help description.  */
-  char * compress_arg;	/**< @brief Comprime o ficheiro selecionado.
-  [uso: --compress meuFicheiro].  */
-  char * compress_orig;	/**< @brief Comprime o ficheiro selecionado.
-  [uso: --compress meuFicheiro] original value given at command line.  */
-  const char *compress_help; /**< @brief Comprime o ficheiro selecionado.
-  [uso: --compress meuFicheiro] help description.  */
-  const char *about_help; /**< @brief Para saber mais sobre o palz.
-  [uso: --about] help description.  */
+  char * decompress_arg;	/**< @brief Descompress the given file.
+  [use: --decompress myFile].  */
+  char * decompress_orig;	/**< @brief Descompress the given file.
+  [use: --decompress myFile] original value given at command line.  */
+  const char *decompress_help; /**< @brief Descompress the given file.
+  [use: --decompress myFile] help description.  */
+  char * folder_decompress_arg;	/**< @brief Decompress all the .palz files in a folder.
+  [use: --folder-decompress myFolder].  */
+  char * folder_decompress_orig;	/**< @brief Decompress all the .palz files in a folder.
+  [use: --folder-decompress myFolder] original value given at command line.  */
+  const char *folder_decompress_help; /**< @brief Decompress all the .palz files in a folder.
+  [use: --folder-decompress myFolder] help description.  */
+  char * compress_arg;	/**< @brief Compress the selected file.
+  [use: --compress myFile].  */
+  char * compress_orig;	/**< @brief Compress the selected file.
+  [use: --compress myFile] original value given at command line.  */
+  const char *compress_help; /**< @brief Compress the selected file.
+  [use: --compress myFile] help description.  */
+  const char *about_help; /**< @brief To know more about palz.
+  [use: --about] help description.  */
   
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int version_given ;	/**< @brief Whether version was given.  */

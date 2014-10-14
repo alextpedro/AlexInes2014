@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-const char *gengetopt_args_info_purpose = "Programa de compressão/descompressão de ficheiros binários";
+const char *gengetopt_args_info_purpose = "Program for the compression/decompression of binary palz files.";
 
 const char *gengetopt_args_info_usage = "Usage: palz [OPTIONS]...";
 
@@ -36,10 +36,10 @@ const char *gengetopt_args_info_description = "";
 const char *gengetopt_args_info_help[] = {
   "  -h, --help                    Print help and exit",
   "  -V, --version                 Print version and exit",
-  "      --decompress=<filename>   Descomprime o ficheiro selecionado.\n                                  [uso: --decompress meuFicheiro]",
-  "      --folder-decompress=<folder>\n                                Descomprime todos os ficheiros .palz numa\n                                  diretoria.\n                                  [uso: --folder-decompress minhaPasta]",
-  "      --compress=<filename>     Comprime o ficheiro selecionado.\n                                  [uso: --compress meuFicheiro]",
-  "      --about                   Para saber mais sobre o palz.\n                                  [uso: --about]",
+  "      --decompress=<filename>   Descompress the given file.\n                                  [use: --decompress myFile]",
+  "      --folder-decompress=<folder>\n                                Decompress all the .palz files in a folder.\n                                  [use: --folder-decompress myFolder]",
+  "      --compress=<filename>     Compress the selected file.\n                                  [use: --compress myFile]",
+  "      --about                   To know more about palz.\n                                  [use: --about]",
     0
 };
 
@@ -489,8 +489,8 @@ cmdline_parser_internal (
 
 
         case 0:	/* Long option with no short option */
-          /* Descomprime o ficheiro selecionado.
-          [uso: --decompress meuFicheiro].  */
+          /* Descompress the given file.
+          [use: --decompress myFile].  */
           if (strcmp (long_options[option_index].name, "decompress") == 0)
           {
           
@@ -504,8 +504,8 @@ cmdline_parser_internal (
               goto failure;
           
           }
-          /* Descomprime todos os ficheiros .palz numa diretoria.
-          [uso: --folder-decompress minhaPasta].  */
+          /* Decompress all the .palz files in a folder.
+          [use: --folder-decompress myFolder].  */
           else if (strcmp (long_options[option_index].name, "folder-decompress") == 0)
           {
           
@@ -519,8 +519,8 @@ cmdline_parser_internal (
               goto failure;
           
           }
-          /* Comprime o ficheiro selecionado.
-          [uso: --compress meuFicheiro].  */
+          /* Compress the selected file.
+          [use: --compress myFile].  */
           else if (strcmp (long_options[option_index].name, "compress") == 0)
           {
           
@@ -534,8 +534,8 @@ cmdline_parser_internal (
               goto failure;
           
           }
-          /* Para saber mais sobre o palz.
-          [uso: --about].  */
+          /* To know more about palz.
+          [use: --about].  */
           else if (strcmp (long_options[option_index].name, "about") == 0)
           {
           

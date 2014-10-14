@@ -45,7 +45,7 @@ ${PROGRAM_OPT}.o: ${PROGRAM_OPT}.c ${PROGRAM_OPT}.h
 
 debug.o: debug.c debug.h
 memory.o: memory.c memory.h
-etapa1.o: etapa1.c etapa1.h
+etapa1.o: etapa1.c etapa1.h debug.h memory.h
 
 #how to create an object file (.o) from C file (.c)
 .c.o:

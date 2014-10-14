@@ -34,6 +34,13 @@ int main(int argc, char *argv[])
 	cmdline_parser(argc,argv,&args);
 
 	/* Main code */
+	//Temporary validation code
+	if (argc > 3) {
+		printf("Invalid number of arguments. Try: ./palz --help \n");
+		exit(1);
+	}
+
+	decompress(args.decompress_arg);
 
 	//End of Code
 	cmdline_parser_free(&args);
