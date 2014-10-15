@@ -26,3 +26,16 @@ void signal_handler (int signal) {
 	(void) signal;
 	running = 0;
 }
+
+//TODO - So not finished.
+float compression_ratio(int sizeOfCompressed, int sizeOfDecompressed) {
+	float ratio = 0;
+	ratio = (1 - (sizeOfCompressed / sizeOfDecompressed) ) * 100;
+	return ratio;
+}
+
+//TODO - I don't even.
+float operation_time () {
+	float operationTime = 0;
+	return operationTime;
+}

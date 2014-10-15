@@ -23,7 +23,7 @@ void decompress (char *filename) {
 	read = getline(&line, &len, myFile);
 
 	if (!is_header_PALZ(line)){
-		printf("Invalid file header.\n");
+		printf("Failed: %s is not a valid .palz file. \n", filename);
 		exit(1);
 	}
 
@@ -31,7 +31,8 @@ void decompress (char *filename) {
 	read = getline(&line, &len, myFile);
 	unsigned int numberOfWords = 0;
 	if (!is_valid_size(line, &numberOfWords)) {
-		printf("Invalid word size in %s\n", filename);
+		//TODO Why did it actually fail? Too big? Not valid? Too small?
+		printf("Failed: %s dictionary is too big. \n", filename); //this error message might not be related to this function.
 		exit(1);
 	}
 
@@ -39,7 +40,6 @@ void decompress (char *filename) {
 	char **strings = malloc (sizeof(char*)*numberOfWords);
 
 	//Read each line in the file until the number of words indicated in the header has been reached.
-	//This is supposedly the end of the file.
 	unsigned int i = 0;
 	while (i < numberOfWords) {
 		read = getline(&line, &len, myFile);
@@ -48,13 +48,16 @@ void decompress (char *filename) {
 		i++;
 	}
 
-	//TODO: Write words to file. If file has .palz extension, create a new file. If not, replace it.
+	//TODO: Write words to file. 
+	write_to_file(strings, filename, numberOfWords);
 	for (i = 0; i < numberOfWords; i++) {
 		DEBUG ("%s", strings[i]);
 	}
 
 	free(strings);
-	fclose(myFile);
+	if(fclose(myFile) != 0) {
+		//treat error
+	}
 }
 
 int is_header_PALZ (const char *header_first_row) {
@@ -83,4 +86,23 @@ int is_valid_size(const char *str, unsigned int *value) {
 
 	*value = number;
 	return 1;
+}
+
+/********************************************
+	\brief Writes a string vector to a file.
+
+	write_to_file receives a pointer to a vector of strings, a filename, and the number of words. It writes the content of the string vector to a file. It returns -1 if there was an error and 0 if the operation was succesful. If the file received doesn't have a .palz extension, it will be replaced. Otherwise, a new file, with the same name but no .palz extension, will be created.
+*********************************************/
+int write_to_file (char** strings, char *filename, unsigned int numberOfWords) {
+	//TODO unfinished 
+	//tmpfile function?
+	FILE *newDoc = tmpfile();
+
+	unsigned int i = 0;
+	while (i < numberOfWords) {
+			fputs(strings[i], newDoc); //EOF if error
+			i++;
+	} 
+
+	return 0; //success
 }
