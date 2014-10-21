@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	//Gengetopt arguments
 	struct gengetopt_args_info args; 
 	cmdline_parser(argc,argv,&args);
-	struct timespec inicio
+	struct timespec init_op, end_op;
 
 	/* Main code */
 	//Temporary validation code
