@@ -41,12 +41,30 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	
-
-	decompress(args.decompress_arg);
-
+	if (args.decompress_arg)
+	{
+		decompress(args.decompress_arg);
+	}
 	
-
+	if(args.compress_arg)
+	{
+		printf("[TODO] option not implemented yet. \n");
+		exit(1);
+	}
 	
+	if (args.parallel_folder_compress_arg)
+	{
+		printf("[TODO] option not implemented yet. \n");
+		exit(1);
+	}
+
+	if (args.parallel_folder_decompress_arg)
+	{
+		printf("[TODO] option not implemented yet. \n");
+		exit(1);
+	}
+
+
 	//End of Code
 	cmdline_parser_free(&args);
 	return 0;
