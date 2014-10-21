@@ -6,5 +6,4 @@
 
 	void trata_sinal (int signal);
 	float compression_ratio(int sizeOfCompressed, int sizeOfDecompressed);
-	float operation_time ();
 #endif

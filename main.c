@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 	//Gengetopt arguments
 	struct gengetopt_args_info args; 
 	cmdline_parser(argc,argv,&args);
+	struct timespec inicio
 
 	/* Main code */
 	//Temporary validation code
@@ -39,9 +40,13 @@ int main(int argc, char *argv[])
 		printf("Invalid number of arguments. Try: ./palz --help \n");
 		exit(1);
 	}
+	
 
 	decompress(args.decompress_arg);
 
+	
+
+	
 	//End of Code
 	cmdline_parser_free(&args);
 	return 0;

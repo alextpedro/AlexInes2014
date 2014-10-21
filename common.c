@@ -33,9 +33,3 @@ float compression_ratio(int sizeOfCompressed, int sizeOfDecompressed) {
 	ratio = (1 - (sizeOfCompressed / sizeOfDecompressed) ) * 100;
 	return ratio;
 }
-
-//TODO - I don't even.
-float operation_time () {
-	float operationTime = 0;
-	return operationTime;
-}

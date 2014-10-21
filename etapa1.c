@@ -95,7 +95,6 @@ int is_valid_size(const char *str, unsigned int *value) {
 *********************************************/
 int write_to_file (char** strings, char *filename, unsigned int numberOfWords) {
 	//TODO unfinished 
-	//tmpfile function?
 	FILE *newDoc = tmpfile();
 
 	unsigned int i = 0;
@@ -103,6 +102,19 @@ int write_to_file (char** strings, char *filename, unsigned int numberOfWords) {
 			fputs(strings[i], newDoc); //EOF if error
 			i++;
 	} 
+	rewind(newDoc);
+	//TODO remove PALZ extension if it exists.
+	FILE *myFile = NULL;
+	myFile = fopen("testFileWrite", "w");
+
+	char buffer[2048];
+	int n;
+	 while( (n=fread(buffer, 1, 2048, newDoc)) > 0) {
+	 	fwrite(buffer, 1, n, myFile);
+	 }
+
+	 fclose(myFile);
+	 fclose(newDoc);
 
 	return 0; //success
 }
