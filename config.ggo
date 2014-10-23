@@ -17,5 +17,13 @@ string optional typestr="<folder>"
 option "compress" - "Compress the selected file.\n[use: --compress myFile]"	
 string	optional typestr="<filename>"
 
+option "parallel-folder-compress" - "compresses all files that do not have the extension .palz in a folder.\n[use: --parallel-folder-compress myFolder --compress-max-threads nthreads:]" 
+string optional typestr="<folder>"
+string optional typestr="<nthreads>"
+
+option "parallel-folder-decompress" - "decompresses all files with extension .palz in a folder.\n[use: --parallel-folder-decompress myFolder --decompress-max-threads nthreads:]" 
+string optional typestr="<folder>"
+string optional typestr="<nthreads>"
+
 option "about" - "To know more about palz.\n[use: --about]" 
 optional
