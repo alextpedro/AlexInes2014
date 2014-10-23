@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
 	/* Main code */
 	//Temporary validation code
-	if (argc > 3) {
+	if (argc > 5) {
 		printf("Invalid number of arguments. Try: ./palz --help \n");
 		exit(1);
 	}
@@ -46,19 +46,19 @@ int main(int argc, char *argv[])
 		decompress(args.decompress_arg);
 	}
 	
-	if(args.compress_arg)
+	if(args.compress_given)
 	{
 		printf("[TODO] option not implemented yet. \n");
 		exit(1);
 	}
 	
-	if (args.parallel_folder_compress_arg)
+	if (args.parallel_folder_compress_given)
 	{
 		printf("[TODO] option not implemented yet. \n");
 		exit(1);
 	}
 
-	if (args.parallel_folder_decompress_arg)
+	if (args.parallel_folder_decompress_given)
 	{
 		printf("[TODO] option not implemented yet. \n");
 		exit(1);

@@ -8,6 +8,7 @@ version "0.1"
 purpose "Program for the compression/decompression of binary palz files."
 
 #Options
+section "independent options"
 option "decompress"	- "Descompress the given file.\n[use: --decompress myFile]" 
 					string	optional typestr="<filename>"
 
@@ -17,13 +18,21 @@ string optional typestr="<folder>"
 option "compress" - "Compress the selected file.\n[use: --compress myFile]"	
 string	optional typestr="<filename>"
 
-option "parallel-folder-compress" - "compresses all files that do not have the extension .palz in a folder.\n[use: --parallel-folder-compress myFolder --compress-max-threads nthreads:]" 
-string optional typestr="<folder>"
-string optional typestr="<nthreads>"
+#ModeOptions
 
-option "parallel-folder-decompress" - "decompresses all files with extension .palz in a folder.\n[use: --parallel-folder-decompress myFolder --decompress-max-threads nthreads:]" 
-string optional typestr="<folder>"
-string optional typestr="<nthreads>"
+section "mode options"
 
-option "about" - "To know more about palz.\n[use: --about]" 
-optional
+#mode_folder_decompress
+defmode "mode_folder_decompress" modedesc="decompresses all files with extension .palz in a folder.\n[use: --parallel-folder-decompress myFolder --decompress-max-threads nthreads:]"
+
+modeoption "parallel-folder-decompress" - "parallel-folder-decompress" mode="mode_folder_decompress" string typestr="folder" required
+
+modeoption "decompress-max-threads" - "decompress-max-threads" mode="mode_folder_decompress" string required
+
+#mode_folder_compress
+defmode "mode_folder_compress" 
+modeoption "parallel-folder-compress" - "parallel-folder-compress" mode="mode_folder_compress" string required
+
+modeoption "compress-max-threads" - "compress-max-threads" mode="mode_folder_compress" string required
+
+option "about" - "To know more about palz.\n[use: --about]" optional
