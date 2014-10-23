@@ -25,7 +25,11 @@
 void *eipa_malloc(size_t size, const int line, const char *file) {
 	void *ptr = malloc(size);
 	if( ptr == NULL ) {
+		#if __WORDSIZE == 64
+		fprintf(stderr, "[%d@%s][ERROR] can't malloc %lu bytes\n", line, file, size);
+		#else 
 		fprintf(stderr, "[%d@%s][ERROR] can't malloc %u bytes\n", line, file, size);
+		#endif
 	}
 	return ptr;
 }

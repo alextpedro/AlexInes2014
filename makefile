@@ -25,7 +25,7 @@ PROGRAM=palz
 PROGRAM_OPT=config
 
 # Object files required to build the executable
-PROGRAM_OBJS=main.o debug.o memory.o etapa1.o ${PROGRAM_OPT}.o
+PROGRAM_OBJS=main.o debug.o memory.o etapa1.o ${PROGRAM_OPT}.o common.o
 
 # Clean and all are not files
 .PHONY: clean all docs indent debugon
@@ -40,12 +40,14 @@ ${PROGRAM}: ${PROGRAM_OBJS}
 	${CC} -o $@ ${PROGRAM_OBJS} ${LIBS}
 
 # Dependencies
-main.o: main.c debug.h memory.h ${PROGRAM_OPT}.h etapa1.h
+main.o: main.c debug.h memory.h ${PROGRAM_OPT}.h etapa1.h common.h
 ${PROGRAM_OPT}.o: ${PROGRAM_OPT}.c ${PROGRAM_OPT}.h
 
 debug.o: debug.c debug.h
 memory.o: memory.c memory.h
-etapa1.o: etapa1.c etapa1.h debug.h memory.h
+common.o: common.c common.h debug.h memory.h
+etapa1.o: etapa1.c etapa1.h debug.h memory.h common.h
+
 
 #how to create an object file (.o) from C file (.c)
 .c.o:

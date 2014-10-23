@@ -7,6 +7,7 @@
 #include <limits.h>
 
 #include "etapa1.h"
+#include "common.h"
 #include "debug.h"
 #include "memory.h"
 
@@ -49,10 +50,11 @@ void decompress (char *filename) {
 	}
 
 	//TODO: Write words to file. 
-	write_to_file(strings, filename, numberOfWords);
 	for (i = 0; i < numberOfWords; i++) {
 		DEBUG ("%s", strings[i]);
 	}
+	write_to_file(strings, filename, numberOfWords);
+	
 
 	free(strings);
 	if(fclose(myFile) != 0) {
@@ -103,15 +105,31 @@ int write_to_file (char** strings, char *filename, unsigned int numberOfWords) {
 			i++;
 	} 
 	rewind(newDoc);
-	//TODO remove PALZ extension if it exists.
+
+	
+	char *ptr = NULL;
+	DEBUG ("%s", filename);
+	ptr = strrchr(filename, '.');
+	if (ptr != NULL && strcasecmp(ptr, ".palz") == 0)
+	{
+		*ptr = 0; //removes the palz
+	}
+
+
 	FILE *myFile = NULL;
-	myFile = fopen("testFileWrite", "w");
+	myFile = fopen(filename, "w");
 
 	char buffer[2048];
 	int n;
 	 while( (n=fread(buffer, 1, 2048, newDoc)) > 0) {
 	 	fwrite(buffer, 1, n, myFile);
 	 }
+
+	 long myFileSize;
+	 long newDocSize;
+	 myFileSize = ftell(myFile);
+	 newDocSize = ftell(newDoc);
+	 printf("Compression ratio:%ld\n", compression_ratio(newDocSize, myFileSize));
 
 	 fclose(myFile);
 	 fclose(newDoc);
