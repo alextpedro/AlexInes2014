@@ -2,8 +2,13 @@
  * Inês Faria 2110922@my.ipleiria.pt */
 #ifndef COMMON_H
 #define COMMON_H
+#define ERR_SIG_INSTALL 1
+
+
 	extern int running;
 
+
 	void trata_sinal (int signal);
-	float compression_ratio(int sizeOfCompressed, int sizeOfDecompressed);
+	void install_signal_handler (void);
+	long compression_ratio(long sizeOfCompressed, long sizeOfDecompressed);
 #endif

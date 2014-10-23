@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "debug.h"
+#include "memory.h"
 
 int running = 1;
 
@@ -27,9 +28,9 @@ void signal_handler (int signal) {
 	running = 0;
 }
 
-//TODO - So not finished.
-float compression_ratio(int sizeOfCompressed, int sizeOfDecompressed) {
-	float ratio = 0;
+long compression_ratio(long sizeOfCompressed, long sizeOfDecompressed) {
+	long ratio = 0;
 	ratio = (1 - (sizeOfCompressed / sizeOfDecompressed) ) * 100;
 	return ratio;
 }
+
