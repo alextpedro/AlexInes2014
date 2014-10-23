@@ -77,6 +77,9 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	/*******************************
+		Gives total operation time.
+	********************************/
 	double total_op_time;
 	total_op_time = (end_op.tv_sec - init_op.tv_sec) + (end_op.tv_nsec - init_op.tv_nsec)/1000000000.0;
 	printf("Execution time:%lf\n", total_op_time);

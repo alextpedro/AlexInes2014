@@ -11,6 +11,39 @@
 #include "debug.h"
 #include "memory.h"
 
+typedef struct text {
+	char text[50];
+}
+
+typedef struct dictionary {
+	text* word;
+}
+
+void initialize_dictionary (unsigned int numberOfWords, char** strings) {
+	dictionary dict = malloc(sizeof(text)*numberOfWords + 14); //treat errors
+
+	//Fill the first indexes with separators
+	strcpy(dict[1]->word,"\n");
+	strcpy(dict[2]->word,"\t");
+	strcpy(dict[3]->word,"\r");
+	strcpy(dict[4]->word," ");
+	strcpy(dict[5]->word,"?");
+	strcpy(dict[6]->word,"!");
+	strcpy(dict[7]->word,".");
+	strcpy(dict[8]->word,";");
+	strcpy(dict[9]->word,",");
+	strcpy(dict[10]->word,":");
+	strcpy(dict[11]->word,"+");
+	strcpy(dict[12]->word,"-");
+	strcpy(dict[13]->word,"*");
+	strcpy(dict[14]->word,"/");
+
+	//Fill the following indexes with the words.
+	for (i = 0; i < numberOfWords; i++){
+		//TODO
+	}
+}
+
 void decompress (char *filename) {
 	//Open the given file
 	FILE *myFile = NULL;
@@ -32,8 +65,7 @@ void decompress (char *filename) {
 	read = getline(&line, &len, myFile);
 	unsigned int numberOfWords = 0;
 	if (!is_valid_size(line, &numberOfWords)) {
-		//TODO Why did it actually fail? Too big? Not valid? Too small?
-		printf("Failed: %s dictionary is too big. \n", filename); //this error message might not be related to this function.
+		printf("Failed: %s dictionary is too big. \n", filename);
 		exit(1);
 	}
 
@@ -48,6 +80,7 @@ void decompress (char *filename) {
 		strings [i] = strdup(line);
 		i++;
 	}
+	//TODO: Write words to dictionary
 
 	//TODO: Write words to file. 
 	for (i = 0; i < numberOfWords; i++) {
