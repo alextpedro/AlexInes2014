@@ -71,6 +71,14 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	if (args.about_given)
+	{
+		printf("PALZ Author\n");
+		printf("Alexandra Pedro Nº2131314\n");
+		printf("Ines Faria Nº2110922\n");
+		exit(1);
+	}
+
 	if (clock_gettime(CLOCK_REALTIME, &end_op) == -1)
 	{
 		printf("clock_gettime() failed.\n");
