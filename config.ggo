@@ -9,14 +9,13 @@ purpose "Program for the compression/decompression of binary palz files."
 
 #Options
 section "independent options"
-option "decompress"	- "Descompress the given file.\n[use: --decompress myFile]" 
-					string	optional typestr="<filename>"
+defgroup "independent"
+groupoption "decompress"	- "Descompress the given file.\n[use: --decompress myFile]" group="independent" string	optional typestr="<filename>" 
 
-option "folder-decompress" - "Decompress all the .palz files in a folder.\n[use: --folder-decompress myFolder]" 
-string optional typestr="<folder>"
+groupoption "folder-decompress" - "Decompress all the .palz files in a folder.\n[use: --folder-decompress myFolder]" 
+group="independent" string optional typestr="<folder>"
 
-option "compress" - "Compress the selected file.\n[use: --compress myFile]"	
-string	optional typestr="<filename>"
+groupoption "compress" - "Compress the selected file.\n[use: --compress myFile]" group="independent" string	optional typestr="<filename>" 
 
 #ModeOptions
 

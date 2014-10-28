@@ -42,6 +42,11 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	if (argc < 3) {
+		printf("Invalid number of arguments. Try: ./palz --help \n");
+		exit(1);
+	}
+
 	if (clock_gettime(CLOCK_REALTIME, &init_op) == -1)
 	{
 		printf("clock_gettime() failed.\n");
@@ -68,6 +73,14 @@ int main(int argc, char *argv[])
 	if (args.parallel_folder_decompress_given)
 	{
 		printf("[TODO] option not implemented yet. \n");
+		exit(1);
+	}
+
+	if (args.about_given)
+	{
+		printf("PALZ Author\n");
+		printf("Alexandra Pedro Nº2131314\n");
+		printf("Ines Faria Nº2110922\n");
 		exit(1);
 	}
 
