@@ -36,11 +36,17 @@ const char *gengetopt_args_info_description = "";
 const char *gengetopt_args_info_help[] = {
   "  -h, --help                    Print help and exit",
   "  -V, --version                 Print version and exit",
+  "\nindependent options:",
   "      --decompress=<filename>   Descompress the given file.\n                                  [use: --decompress myFile]",
   "      --folder-decompress=<folder>\n                                Decompress all the .palz files in a folder.\n                                  [use: --folder-decompress myFolder]",
   "      --compress=<filename>     Compress the selected file.\n                                  [use: --compress myFile]",
-  "      --parallel-folder-compress=<nthreads>\n                                compresses all files that do not have the\n                                  extension .palz in a folder.\n                                  [use: --parallel-folder-compress myFolder\n                                  --compress-max-threads nthreads:]",
-  "      --parallel-folder-decompress=<nthreads>\n                                decompresses all files with extension .palz in\n                                  a folder.\n                                  [use: --parallel-folder-decompress myFolder\n                                  --decompress-max-threads nthreads:]",
+  "\nmode options:",
+  "\n Mode: mode_folder_decompress\n  decompresses all files with extension .palz in a folder.\n  [use: --parallel-folder-decompress myFolder --decompress-max-threads\n  nthreads:]",
+  "      --parallel-folder-decompress=folder\n                                parallel-folder-decompress",
+  "      --decompress-max-threads=STRING\n                                decompress-max-threads",
+  "\n Mode: mode_folder_compress",
+  "      --parallel-folder-compress=STRING\n                                parallel-folder-compress",
+  "      --compress-max-threads=STRING\n                                compress-max-threads",
   "      --about                   To know more about palz.\n                                  [use: --about]",
     0
 };
@@ -58,6 +64,8 @@ static int
 cmdline_parser_internal (int argc, char **argv, struct gengetopt_args_info *args_info,
                         struct cmdline_parser_params *params, const char *additional_error);
 
+static int
+cmdline_parser_required2 (struct gengetopt_args_info *args_info, const char *prog_name, const char *additional_error);
 
 static char *
 gengetopt_strdup (const char *s);
@@ -70,9 +78,13 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->decompress_given = 0 ;
   args_info->folder_decompress_given = 0 ;
   args_info->compress_given = 0 ;
-  args_info->parallel_folder_compress_given = 0 ;
   args_info->parallel_folder_decompress_given = 0 ;
+  args_info->decompress_max_threads_given = 0 ;
+  args_info->parallel_folder_compress_given = 0 ;
+  args_info->compress_max_threads_given = 0 ;
   args_info->about_given = 0 ;
+  args_info->mode_folder_compress_mode_counter = 0 ;
+  args_info->mode_folder_decompress_mode_counter = 0 ;
 }
 
 static
@@ -85,10 +97,14 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->folder_decompress_orig = NULL;
   args_info->compress_arg = NULL;
   args_info->compress_orig = NULL;
-  args_info->parallel_folder_compress_arg = NULL;
-  args_info->parallel_folder_compress_orig = NULL;
   args_info->parallel_folder_decompress_arg = NULL;
   args_info->parallel_folder_decompress_orig = NULL;
+  args_info->decompress_max_threads_arg = NULL;
+  args_info->decompress_max_threads_orig = NULL;
+  args_info->parallel_folder_compress_arg = NULL;
+  args_info->parallel_folder_compress_orig = NULL;
+  args_info->compress_max_threads_arg = NULL;
+  args_info->compress_max_threads_orig = NULL;
   
 }
 
@@ -99,12 +115,14 @@ void init_args_info(struct gengetopt_args_info *args_info)
 
   args_info->help_help = gengetopt_args_info_help[0] ;
   args_info->version_help = gengetopt_args_info_help[1] ;
-  args_info->decompress_help = gengetopt_args_info_help[2] ;
-  args_info->folder_decompress_help = gengetopt_args_info_help[3] ;
-  args_info->compress_help = gengetopt_args_info_help[4] ;
-  args_info->parallel_folder_compress_help = gengetopt_args_info_help[5] ;
-  args_info->parallel_folder_decompress_help = gengetopt_args_info_help[6] ;
-  args_info->about_help = gengetopt_args_info_help[7] ;
+  args_info->decompress_help = gengetopt_args_info_help[3] ;
+  args_info->folder_decompress_help = gengetopt_args_info_help[4] ;
+  args_info->compress_help = gengetopt_args_info_help[5] ;
+  args_info->parallel_folder_decompress_help = gengetopt_args_info_help[8] ;
+  args_info->decompress_max_threads_help = gengetopt_args_info_help[9] ;
+  args_info->parallel_folder_compress_help = gengetopt_args_info_help[11] ;
+  args_info->compress_max_threads_help = gengetopt_args_info_help[12] ;
+  args_info->about_help = gengetopt_args_info_help[13] ;
   
 }
 
@@ -194,10 +212,14 @@ cmdline_parser_release (struct gengetopt_args_info *args_info)
   free_string_field (&(args_info->folder_decompress_orig));
   free_string_field (&(args_info->compress_arg));
   free_string_field (&(args_info->compress_orig));
-  free_string_field (&(args_info->parallel_folder_compress_arg));
-  free_string_field (&(args_info->parallel_folder_compress_orig));
   free_string_field (&(args_info->parallel_folder_decompress_arg));
   free_string_field (&(args_info->parallel_folder_decompress_orig));
+  free_string_field (&(args_info->decompress_max_threads_arg));
+  free_string_field (&(args_info->decompress_max_threads_orig));
+  free_string_field (&(args_info->parallel_folder_compress_arg));
+  free_string_field (&(args_info->parallel_folder_compress_orig));
+  free_string_field (&(args_info->compress_max_threads_arg));
+  free_string_field (&(args_info->compress_max_threads_orig));
   
   
 
@@ -238,10 +260,14 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
     write_into_file(outfile, "folder-decompress", args_info->folder_decompress_orig, 0);
   if (args_info->compress_given)
     write_into_file(outfile, "compress", args_info->compress_orig, 0);
-  if (args_info->parallel_folder_compress_given)
-    write_into_file(outfile, "parallel-folder-compress", args_info->parallel_folder_compress_orig, 0);
   if (args_info->parallel_folder_decompress_given)
     write_into_file(outfile, "parallel-folder-decompress", args_info->parallel_folder_decompress_orig, 0);
+  if (args_info->decompress_max_threads_given)
+    write_into_file(outfile, "decompress-max-threads", args_info->decompress_max_threads_orig, 0);
+  if (args_info->parallel_folder_compress_given)
+    write_into_file(outfile, "parallel-folder-compress", args_info->parallel_folder_compress_orig, 0);
+  if (args_info->compress_max_threads_given)
+    write_into_file(outfile, "compress-max-threads", args_info->compress_max_threads_orig, 0);
   if (args_info->about_given)
     write_into_file(outfile, "about", 0, 0 );
   
@@ -339,9 +365,55 @@ cmdline_parser2 (int argc, char **argv, struct gengetopt_args_info *args_info, i
 int
 cmdline_parser_required (struct gengetopt_args_info *args_info, const char *prog_name)
 {
-  FIX_UNUSED (args_info);
-  FIX_UNUSED (prog_name);
-  return EXIT_SUCCESS;
+  int result = EXIT_SUCCESS;
+
+  if (cmdline_parser_required2(args_info, prog_name, 0) > 0)
+    result = EXIT_FAILURE;
+
+  if (result == EXIT_FAILURE)
+    {
+      cmdline_parser_free (args_info);
+      exit (EXIT_FAILURE);
+    }
+  
+  return result;
+}
+
+int
+cmdline_parser_required2 (struct gengetopt_args_info *args_info, const char *prog_name, const char *additional_error)
+{
+  int error_occurred = 0;
+  FIX_UNUSED (additional_error);
+
+  /* checks for required options */
+  if (args_info->mode_folder_decompress_mode_counter && ! args_info->parallel_folder_decompress_given)
+    {
+      fprintf (stderr, "%s: '--parallel-folder-decompress' option required%s\n", prog_name, (additional_error ? additional_error : ""));
+      error_occurred = 1;
+    }
+  
+  if (args_info->mode_folder_decompress_mode_counter && ! args_info->decompress_max_threads_given)
+    {
+      fprintf (stderr, "%s: '--decompress-max-threads' option required%s\n", prog_name, (additional_error ? additional_error : ""));
+      error_occurred = 1;
+    }
+  
+  if (args_info->mode_folder_compress_mode_counter && ! args_info->parallel_folder_compress_given)
+    {
+      fprintf (stderr, "%s: '--parallel-folder-compress' option required%s\n", prog_name, (additional_error ? additional_error : ""));
+      error_occurred = 1;
+    }
+  
+  if (args_info->mode_folder_compress_mode_counter && ! args_info->compress_max_threads_given)
+    {
+      fprintf (stderr, "%s: '--compress-max-threads' option required%s\n", prog_name, (additional_error ? additional_error : ""));
+      error_occurred = 1;
+    }
+  
+  
+  /* checks for dependences among options */
+
+  return error_occurred;
 }
 
 
@@ -443,6 +515,29 @@ int update_arg(void *field, char **orig_field,
 }
 
 
+static int check_modes(
+  int given1[], const char *options1[],
+                       int given2[], const char *options2[])
+{
+  int i = 0, j = 0, errors = 0;
+  
+  while (given1[i] >= 0) {
+    if (given1[i]) {
+      while (given2[j] >= 0) {
+        if (given2[j]) {
+          ++errors;
+          fprintf(stderr, "%s: option %s conflicts with option %s\n",
+                  package_name, options1[i], options2[j]);
+        }
+        ++j;
+      }
+    }
+    ++i;
+  }
+  
+  return errors;
+}
+
 int
 cmdline_parser_internal (
   int argc, char **argv, struct gengetopt_args_info *args_info,
@@ -485,8 +580,10 @@ cmdline_parser_internal (
         { "decompress",	1, NULL, 0 },
         { "folder-decompress",	1, NULL, 0 },
         { "compress",	1, NULL, 0 },
-        { "parallel-folder-compress",	1, NULL, 0 },
         { "parallel-folder-decompress",	1, NULL, 0 },
+        { "decompress-max-threads",	1, NULL, 0 },
+        { "parallel-folder-compress",	1, NULL, 0 },
+        { "compress-max-threads",	1, NULL, 0 },
         { "about",	0, NULL, 0 },
         { 0,  0, 0, 0 }
       };
@@ -554,10 +651,40 @@ cmdline_parser_internal (
               goto failure;
           
           }
-          /* compresses all files that do not have the extension .palz in a folder.
-          [use: --parallel-folder-compress myFolder --compress-max-threads nthreads:].  */
+          /* parallel-folder-decompress.  */
+          else if (strcmp (long_options[option_index].name, "parallel-folder-decompress") == 0)
+          {
+            args_info->mode_folder_decompress_mode_counter += 1;
+          
+          
+            if (update_arg( (void *)&(args_info->parallel_folder_decompress_arg), 
+                 &(args_info->parallel_folder_decompress_orig), &(args_info->parallel_folder_decompress_given),
+                &(local_args_info.parallel_folder_decompress_given), optarg, 0, 0, ARG_STRING,
+                check_ambiguity, override, 0, 0,
+                "parallel-folder-decompress", '-',
+                additional_error))
+              goto failure;
+          
+          }
+          /* decompress-max-threads.  */
+          else if (strcmp (long_options[option_index].name, "decompress-max-threads") == 0)
+          {
+            args_info->mode_folder_decompress_mode_counter += 1;
+          
+          
+            if (update_arg( (void *)&(args_info->decompress_max_threads_arg), 
+                 &(args_info->decompress_max_threads_orig), &(args_info->decompress_max_threads_given),
+                &(local_args_info.decompress_max_threads_given), optarg, 0, 0, ARG_STRING,
+                check_ambiguity, override, 0, 0,
+                "decompress-max-threads", '-',
+                additional_error))
+              goto failure;
+          
+          }
+          /* parallel-folder-compress.  */
           else if (strcmp (long_options[option_index].name, "parallel-folder-compress") == 0)
           {
+            args_info->mode_folder_compress_mode_counter += 1;
           
           
             if (update_arg( (void *)&(args_info->parallel_folder_compress_arg), 
@@ -569,17 +696,17 @@ cmdline_parser_internal (
               goto failure;
           
           }
-          /* decompresses all files with extension .palz in a folder.
-          [use: --parallel-folder-decompress myFolder --decompress-max-threads nthreads:].  */
-          else if (strcmp (long_options[option_index].name, "parallel-folder-decompress") == 0)
+          /* compress-max-threads.  */
+          else if (strcmp (long_options[option_index].name, "compress-max-threads") == 0)
           {
+            args_info->mode_folder_compress_mode_counter += 1;
           
           
-            if (update_arg( (void *)&(args_info->parallel_folder_decompress_arg), 
-                 &(args_info->parallel_folder_decompress_orig), &(args_info->parallel_folder_decompress_given),
-                &(local_args_info.parallel_folder_decompress_given), optarg, 0, 0, ARG_STRING,
+            if (update_arg( (void *)&(args_info->compress_max_threads_arg), 
+                 &(args_info->compress_max_threads_orig), &(args_info->compress_max_threads_given),
+                &(local_args_info.compress_max_threads_given), optarg, 0, 0, ARG_STRING,
                 check_ambiguity, override, 0, 0,
-                "parallel-folder-decompress", '-',
+                "compress-max-threads", '-',
                 additional_error))
               goto failure;
           
@@ -613,6 +740,18 @@ cmdline_parser_internal (
 
 
 
+  if (args_info->mode_folder_compress_mode_counter && args_info->mode_folder_decompress_mode_counter) {
+    int mode_folder_compress_given[] = {args_info->parallel_folder_compress_given, args_info->compress_max_threads_given,  -1};
+    const char *mode_folder_compress_desc[] = {"--parallel-folder-compress", "--compress-max-threads",  0};
+    int mode_folder_decompress_given[] = {args_info->parallel_folder_decompress_given, args_info->decompress_max_threads_given,  -1};
+    const char *mode_folder_decompress_desc[] = {"--parallel-folder-decompress", "--decompress-max-threads",  0};
+    error_occurred += check_modes(mode_folder_compress_given, mode_folder_compress_desc, mode_folder_decompress_given, mode_folder_decompress_desc);
+  }
+  
+  if (check_required)
+    {
+      error_occurred += cmdline_parser_required2 (args_info, argv[0], additional_error);
+    }
 
   cmdline_parser_release (&local_args_info);
 
