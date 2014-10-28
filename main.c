@@ -42,6 +42,11 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	if (argc < 3) {
+		printf("Invalid number of arguments. Try: ./palz --help \n");
+		exit(1);
+	}
+
 	if (clock_gettime(CLOCK_REALTIME, &init_op) == -1)
 	{
 		printf("clock_gettime() failed.\n");
