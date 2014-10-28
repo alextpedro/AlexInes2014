@@ -6,6 +6,7 @@
 int is_header_PALZ (const char *header_first_row);
 int is_valid_size(const char *size_str, unsigned int *value);
 void decompress (char *filename);
-int write_to_file (char**, char *filename, unsigned int numberOfWords);
+int write_to_file (char**, char *filename, FILE*, unsigned int numberOfWords);
+int bytes_for_int(unsigned int max_value);
 
 #endif

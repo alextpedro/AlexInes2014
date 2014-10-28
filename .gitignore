@@ -27,5 +27,8 @@
 *.i*86
 *.x86_64
 *.hex
-
+palz
+pa-test-decompress.pl
 /tests
+config.h
+simple.txt
