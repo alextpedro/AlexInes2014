@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	struct timespec init_op, end_op;
 
 	/* Main code */
-	//Temporary validation code
+	//Cannot have more than 5 arguments at any time
 	if (argc > 5) {
 		printf("Invalid number of arguments. Try: ./palz --help \n");
 		exit(1);
@@ -47,17 +47,25 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	//Initialize the operation clock.
 	if (clock_gettime(CLOCK_REALTIME, &init_op) == -1)
 	{
 		printf("clock_gettime() failed.\n");
 		exit(1);
 	}
 
+	//Simple single file decompression
 	if (args.decompress_arg)
 	{
 		decompress(args.decompress_arg);
 	}
 	
+	//Folder decompression
+	// if (args.folder-decompress_arg) {
+	// 	folder_decompress(args.folder-decompress_arg);
+	// }
+
+	//Treatment of unimplemented arguments.
 	if(args.compress_given)
 	{
 		printf("[TODO] option not implemented yet. \n");
