@@ -30,6 +30,12 @@ void signal_handler (int signal) {
 
 long compression_ratio(long sizeOfCompressed, long sizeOfDecompressed) {
 	long ratio = 0;
+
+	if (sizeOfDecompressed == 0) {
+		printf("Do not divide by 0... it messes with the universe.");
+		return ratio;
+	}
+
 	ratio = (1 - (sizeOfCompressed / sizeOfDecompressed) ) * 100;
 	return ratio;
 }

@@ -26,6 +26,7 @@ void decompress (char *filename) {
 
 	if (myFile == NULL){
 		printf("fopen() failed.\n");
+		exit(1);
 	}
 
 	//Read the first line for PALZ headline
@@ -52,7 +53,12 @@ void decompress (char *filename) {
 	}
 
 	//Allocate memory for the dictionary
-	char **words = malloc (sizeof(char*)*(numberOfWords+15));
+	char **words = malloc (sizeof(char*) * (numberOfWords+15));
+
+	unsigned int k = 0;
+	for (k = 0; k < numberOfWords+16; ++k) {
+		words[k] = malloc (sizeof(char)*100);
+	}
 
 	//Read each line in the file until the number of words indicated in the header has been reached.
 	unsigned int i = 0;
@@ -85,18 +91,22 @@ void decompress (char *filename) {
 
 	//start decompression and write to file
 	write_to_file(words, filename, myFile, numberOfWords);
+
+	
 	
 	//Free memory from words.
-	int j = 0;
-	for (j = numberOfWords+15; j >= 0; j--)
+	unsigned int j = 0;
+	for (j = 0; j < numberOfWords+15; ++j)
 	{
 		free(words[j]);
 	}
-	
+	free(words);
+
 	if(fclose(myFile) != 0) {
 		printf("fclose() failed.\n");
 		exit(1);
 	}
+
 }
 
 int is_header_PALZ (const char *header_first_row) {
@@ -206,6 +216,9 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	FILE *permFile = NULL;
 
 	permFile = fopen(filename, "w");
+	if (permFile == NULL) {
+		printf("fopen() failed.\n");
+	}
 	rewind(tmpFile);
 
 	//Copy from the temporary file to the permanent file
@@ -214,7 +227,6 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	while( (n=fread(buffer, 1, 8096, tmpFile)) > 0) {
 	 	fwrite(buffer, 1, n, permFile);
 	}
-	fflush(tmpFile);
 
 
 	//Return the compression ratio
@@ -233,5 +245,6 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 }
 
 void folderDecompress (char *folder) {
-	//TODO
+	//TODO - dummy warning supression code
+	printf("%s\n", folder);
 }
