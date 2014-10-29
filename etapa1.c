@@ -111,7 +111,7 @@ int is_valid_size(const char *str, unsigned int *value) {
 		return 0;
 	}
 
-	if (number < 0 || number > UINT_MAX)
+	if (number < 0 || number > pow(2,24))
 	{
 		return 0;
 	}
@@ -145,13 +145,22 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	//Decompress
 	int bytes = bytes_for_int(numberOfWords+15);
 	unsigned int prev_code = 0;
-	while (fread(&code, bytes , 1, compressed)>0) {
+	int i;
+	while (fread(&code, bytes , 1, compressed) > 0) {
 		DEBUG("%u", code);
 		//detect repetitions
 		if (code == 0 ) {
 			//check if prev code exists and is separator
+			for (i = 1; i < 15; ++i)
+			{
+				//prev code is a separator
+				if(prev_code >= 4 && prev_code < 15){
+					break;
+				}
+				else { return -1; } //error leave function
+			}
 			//read next line
-			fread(&code, bytes , 1, compressed)
+			fread(&code, bytes , 1, compressed);
 			while (code != 0) {
 				fputs (words[prev_code], newDoc);
 				code--;
