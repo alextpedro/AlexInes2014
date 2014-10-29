@@ -12,10 +12,20 @@
 #include "debug.h"
 #include "memory.h"
 
+/**
+ * @brief Decompresses a .palz file 
+ * @details Function receives a filename, opens it, verifies that it is a valid .palz file with a valid dictionary and starts the proceedures to decompress the file into a new one, or itself, depending on whether or not the file given has a .palz extension.
+ * 
+ * @param filename Pointer to filename passed by the command line arguments. 
+ */
 void decompress (char *filename) {
 	//Open the given file
 	FILE *myFile = NULL;
+	errno = 0;
 	myFile = fopen(filename, "r");
+	if (errno != 0){
+		printf("fopen() failed.\n");
+	}
 
 	//Read the first line for PALZ headline
 	char *line = NULL;
@@ -24,12 +34,13 @@ void decompress (char *filename) {
 
 	read = getline(&line, &len, myFile);
 
+	//Verify if it's a valid .palz file.
 	if (!is_header_PALZ(line)){
 		printf("Failed: %s is not a valid .palz file.\n", filename);
 		exit(1);
 	}
 
-	//Read the second line for the number of words 
+	//Read the second line for the number of words in the dictionary.
 	read = getline(&line, &len, myFile);
 	unsigned int numberOfWords = 0;
 	if (!is_valid_size(line, &numberOfWords)) {
@@ -37,7 +48,7 @@ void decompress (char *filename) {
 		exit(1);
 	}
 
-	//Allocate memory for the words
+	//Allocate memory for the dictionary
 	char **words = malloc (sizeof(char*)*(numberOfWords+15));
 
 	DEBUG("%u", numberOfWords);
@@ -50,10 +61,10 @@ void decompress (char *filename) {
 		words [i+15] = strdup(line);
 		i++;
 	}
-	//Initialize the dictionary
+	//Initialize the dictionary with separators
 	words[1]="\n";
-	words[3]="\r";
-	words[2]="\t";
+	words[2]="\r";
+	words[3]="\t";
 	words[4]=" ";
 	words[5]="?";
 	words[6]="!";
@@ -67,17 +78,19 @@ void decompress (char *filename) {
 	words[14]="/";
 	
 	//TODO
-	if(sizeof(words) >= (2^24)) {
+	if(sizeof(words) >= ) {
 		printf("Failed: %s dictionary is too big.\n", filename);
 	}
 
-	//for (i = 0; i < numberOfWords; i++) {
-	//	DEBUG ("%s", words[i]);
-	//}
+	//start decompression and write to file
 	write_to_file(words, filename, myFile, numberOfWords);
 	
-
-	free(words); //for free de 15 ao fim
+	//Free memory from words.
+	int i = 0;
+	for (i = numberOfWords+15; i > -1; --i)
+	{
+		free(words[i]);
+	}
 	if(fclose(myFile) != 0) {
 		//treat error
 	}
