@@ -151,7 +151,7 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 		if (code == 0 ) {
 			//check if prev code exists and is separator
 			//read next line
-			fread(&code, bytes , 1, compressed)
+			fread(&code, bytes , 1, compressed);
 			while (code != 0) {
 				fputs (words[prev_code], newDoc);
 				code--;

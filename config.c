@@ -37,6 +37,7 @@ const char *gengetopt_args_info_help[] = {
   "  -h, --help                    Print help and exit",
   "  -V, --version                 Print version and exit",
   "\nindependent options:",
+  "\n Group: independent",
   "      --decompress=<filename>   Descompress the given file.\n                                  [use: --decompress myFile]",
   "      --folder-decompress=<folder>\n                                Decompress all the .palz files in a folder.\n                                  [use: --folder-decompress myFolder]",
   "      --compress=<filename>     Compress the selected file.\n                                  [use: --compress myFile]",
@@ -83,6 +84,7 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->parallel_folder_compress_given = 0 ;
   args_info->compress_max_threads_given = 0 ;
   args_info->about_given = 0 ;
+  args_info->independent_group_counter = 0 ;
   args_info->mode_folder_compress_mode_counter = 0 ;
   args_info->mode_folder_decompress_mode_counter = 0 ;
 }
@@ -115,14 +117,14 @@ void init_args_info(struct gengetopt_args_info *args_info)
 
   args_info->help_help = gengetopt_args_info_help[0] ;
   args_info->version_help = gengetopt_args_info_help[1] ;
-  args_info->decompress_help = gengetopt_args_info_help[3] ;
-  args_info->folder_decompress_help = gengetopt_args_info_help[4] ;
-  args_info->compress_help = gengetopt_args_info_help[5] ;
-  args_info->parallel_folder_decompress_help = gengetopt_args_info_help[8] ;
-  args_info->decompress_max_threads_help = gengetopt_args_info_help[9] ;
-  args_info->parallel_folder_compress_help = gengetopt_args_info_help[11] ;
-  args_info->compress_max_threads_help = gengetopt_args_info_help[12] ;
-  args_info->about_help = gengetopt_args_info_help[13] ;
+  args_info->decompress_help = gengetopt_args_info_help[4] ;
+  args_info->folder_decompress_help = gengetopt_args_info_help[5] ;
+  args_info->compress_help = gengetopt_args_info_help[6] ;
+  args_info->parallel_folder_decompress_help = gengetopt_args_info_help[9] ;
+  args_info->decompress_max_threads_help = gengetopt_args_info_help[10] ;
+  args_info->parallel_folder_compress_help = gengetopt_args_info_help[12] ;
+  args_info->compress_max_threads_help = gengetopt_args_info_help[13] ;
+  args_info->about_help = gengetopt_args_info_help[14] ;
   
 }
 
@@ -315,6 +317,25 @@ gengetopt_strdup (const char *s)
     return (char*)0;
   strcpy(result, s);
   return result;
+}
+
+static void
+reset_group_independent(struct gengetopt_args_info *args_info)
+{
+  if (! args_info->independent_group_counter)
+    return;
+  
+  args_info->decompress_given = 0 ;
+  free_string_field (&(args_info->decompress_arg));
+  free_string_field (&(args_info->decompress_orig));
+  args_info->folder_decompress_given = 0 ;
+  free_string_field (&(args_info->folder_decompress_arg));
+  free_string_field (&(args_info->folder_decompress_orig));
+  args_info->compress_given = 0 ;
+  free_string_field (&(args_info->compress_arg));
+  free_string_field (&(args_info->compress_orig));
+
+  args_info->independent_group_counter = 0;
 }
 
 int
@@ -611,6 +632,9 @@ cmdline_parser_internal (
           if (strcmp (long_options[option_index].name, "decompress") == 0)
           {
           
+            if (args_info->independent_group_counter && override)
+              reset_group_independent (args_info);
+            args_info->independent_group_counter += 1;
           
             if (update_arg( (void *)&(args_info->decompress_arg), 
                  &(args_info->decompress_orig), &(args_info->decompress_given),
@@ -626,6 +650,9 @@ cmdline_parser_internal (
           else if (strcmp (long_options[option_index].name, "folder-decompress") == 0)
           {
           
+            if (args_info->independent_group_counter && override)
+              reset_group_independent (args_info);
+            args_info->independent_group_counter += 1;
           
             if (update_arg( (void *)&(args_info->folder_decompress_arg), 
                  &(args_info->folder_decompress_orig), &(args_info->folder_decompress_given),
@@ -641,6 +668,9 @@ cmdline_parser_internal (
           else if (strcmp (long_options[option_index].name, "compress") == 0)
           {
           
+            if (args_info->independent_group_counter && override)
+              reset_group_independent (args_info);
+            args_info->independent_group_counter += 1;
           
             if (update_arg( (void *)&(args_info->compress_arg), 
                  &(args_info->compress_orig), &(args_info->compress_given),
@@ -738,6 +768,12 @@ cmdline_parser_internal (
         } /* switch */
     } /* while */
 
+  if (args_info->independent_group_counter > 1)
+    {
+      fprintf (stderr, "%s: %d options of group independent were given. At most one is required%s.\n", argv[0], args_info->independent_group_counter, (additional_error ? additional_error : ""));
+      error_occurred = 1;
+    }
+  
 
 
   if (args_info->mode_folder_compress_mode_counter && args_info->mode_folder_decompress_mode_counter) {

@@ -57,6 +57,12 @@ int main(int argc, char *argv[])
 	{
 		decompress(args.decompress_arg);
 	}
+
+	if (args.folder_decompress_arg)
+	{
+		printf("%s\n", args.folder_decompress_arg);
+		//funcao a fazer
+	}
 	
 	if(args.compress_given)
 	{
