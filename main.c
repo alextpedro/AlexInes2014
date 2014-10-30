@@ -59,11 +59,13 @@ int main(int argc, char *argv[])
 	{
 		decompress(args.decompress_arg);
 	}
-	
+
 	//Folder decompression
-	// if (args.folder-decompress_arg) {
-	// 	folder_decompress(args.folder-decompress_arg);
-	// }
+	if (args.folder_decompress_arg)
+	{
+		folderDecompress(args.folder_decompress_arg);
+		
+	}
 
 	//Treatment of unimplemented arguments.
 	if(args.compress_given)
