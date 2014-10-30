@@ -12,10 +12,22 @@
 #include "debug.h"
 #include "memory.h"
 
+/**
+ * @brief Decompresses a .palz file 
+ * @details Function receives a filename, opens it, verifies that it is a valid .palz file with a valid dictionary and starts the proceedures to decompress the file into a new one, or itself, depending on whether or not the file given has a .palz extension.
+ * 
+ * @param filename Pointer to filename passed by the command line arguments. 
+ */
 void decompress (char *filename) {
 	//Open the given file
 	FILE *myFile = NULL;
+
 	myFile = fopen(filename, "r");
+
+	if (myFile == NULL){
+		printf("fopen() failed.\n");
+		exit(1);
+	}
 
 	//Read the first line for PALZ headline
 	char *line = NULL;
@@ -24,23 +36,29 @@ void decompress (char *filename) {
 
 	read = getline(&line, &len, myFile);
 
+	//Verify if it's a valid .palz file.
 	if (!is_header_PALZ(line)){
 		printf("Failed: %s is not a valid .palz file.\n", filename);
+		fclose(myFile);
 		exit(1);
 	}
 
-	//Read the second line for the number of words 
+	//Read the second line for the number of words in the dictionary.
 	read = getline(&line, &len, myFile);
 	unsigned int numberOfWords = 0;
 	if (!is_valid_size(line, &numberOfWords)) {
 		printf("Failed: %s has an invalid number of words.\n", filename);
+		fclose(myFile);
 		exit(1);
 	}
 
-	//Allocate memory for the words
-	char **words = malloc (sizeof(char*)*(numberOfWords+15));
+	//Allocate memory for the dictionary
+	char **words = malloc (sizeof(char*) * (numberOfWords+15));
 
-	DEBUG("%u", numberOfWords);
+	unsigned int k = 0;
+	for (k = 0; k < numberOfWords+16; ++k) {
+		words[k] = malloc (sizeof(char)*100);
+	}
 
 	//Read each line in the file until the number of words indicated in the header has been reached.
 	unsigned int i = 0;
@@ -50,10 +68,10 @@ void decompress (char *filename) {
 		words [i+15] = strdup(line);
 		i++;
 	}
-	//Initialize the dictionary
+	//Initialize the dictionary with separators
 	words[1]="\n";
-	words[3]="\r";
-	words[2]="\t";
+	words[2]="\r";
+	words[3]="\t";
 	words[4]=" ";
 	words[5]="?";
 	words[6]="!";
@@ -67,20 +85,28 @@ void decompress (char *filename) {
 	words[14]="/";
 	
 	//TODO
-	if(sizeof(words) >= (2^24)) {
-		printf("Failed: %s dictionary is too big.\n", filename);
-	}
+	// if(sizeof(words) >= ) {
+	// 	printf("Failed: %s dictionary is too big.\n", filename);
+	// }
 
-	//for (i = 0; i < numberOfWords; i++) {
-	//	DEBUG ("%s", words[i]);
-	//}
+	//start decompression and write to file
 	write_to_file(words, filename, myFile, numberOfWords);
-	
 
-	free(words); //for free de 15 ao fim
-	if(fclose(myFile) != 0) {
-		//treat error
+	
+	
+	//Free memory from words.
+	unsigned int j = 0;
+	for (j = 0; j < numberOfWords+15; ++j)
+	{
+		free(words[j]);
 	}
+	free(words);
+
+	if(fclose(myFile) != 0) {
+		printf("fclose() failed.\n");
+		exit(1);
+	}
+
 }
 
 int is_header_PALZ (const char *header_first_row) {
@@ -111,7 +137,7 @@ int is_valid_size(const char *str, unsigned int *value) {
 		return 0;
 	}
 
-	if (number < 0 || number > UINT_MAX)
+	if (number < 0 || number > pow(2,24))
 	{
 		return 0;
 	}
@@ -122,8 +148,7 @@ int is_valid_size(const char *str, unsigned int *value) {
 
 int bytes_for_int(unsigned int max_value) {
 	double nbits = log2(((double)max_value)+1);
-	int nbytes = ceil(nbits/8);
-	//return ceil(log2(max_value+1)/8); 
+	int nbytes = ceil(nbits/8); 
 
 	return nbytes;
 }
@@ -139,26 +164,36 @@ int bytes_for_int(unsigned int max_value) {
  */
 int write_to_file (char** words, char *filename, FILE* compressed, unsigned int numberOfWords) {
 	//TODO unfinished 
-	FILE *newDoc = tmpfile();
+	FILE *tmpFile = tmpfile();
 	unsigned int code = 0;
 
 	//Decompress
 	int bytes = bytes_for_int(numberOfWords+15);
 	unsigned int prev_code = 0;
-	while (fread(&code, bytes , 1, compressed)>0) {
-		DEBUG("%u", code);
+	int i;
+	while (fread(&code, bytes , 1, compressed) > 0) {
 		//detect repetitions
 		if (code == 0 ) {
 			//check if prev code exists and is separator
+			for (i = 1; i < 15; ++i) {
+				//prev code is a separator
+				if(prev_code >= 4 && prev_code < 15){
+					break; //exit for cycle
+				}
+				else { return -1; } //error leave function
+			}
+
 			//read next line
 			fread(&code, bytes , 1, compressed);
 			while (code != 0) {
-				fputs (words[prev_code], newDoc);
+				fputs (words[prev_code], tmpFile);
 				code--;
 			}
 		}
+
+		//code is not a repetition
 		else {
-			fputs (words[code], newDoc);
+			fputs (words[code], tmpFile);
 			prev_code = code;
 		}
 	}
@@ -168,17 +203,9 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 		DEBUG("read error");
 	}
 
-	//unsigned int i = 0;
-	//while (i < numberOfWords+15) {
-	// 		fputs(words[i], newDoc); //EOF if error
-	// 		i++;
-	// } 
-	// rewind(newDoc);
-
 
 	//Searches and removes .palz extension if it exists
 	char *ptr = NULL;
-	DEBUG ("%s", filename);
 	ptr = strrchr(filename, '.');
 	if (ptr != NULL && strcasecmp(ptr, ".palz") == 0)
 	{
@@ -186,27 +213,38 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	}
 
 	//Write to file
-	FILE *myFile = NULL;
-	rewind(newDoc);
-	myFile = fopen(filename, "w");
+	FILE *permFile = NULL;
 
+	permFile = fopen(filename, "w");
+	if (permFile == NULL) {
+		printf("fopen() failed.\n");
+	}
+	rewind(tmpFile);
+
+	//Copy from the temporary file to the permanent file
 	char buffer[8096];
 	int n;
-	while( (n=fread(buffer, 1, 8096, newDoc)) > 0) {
-	 	fwrite(buffer, 1, n, myFile);
+	while( (n=fread(buffer, 1, 8096, tmpFile)) > 0) {
+	 	fwrite(buffer, 1, n, permFile);
 	}
-	fflush(myFile);
 
 
 	//Return the compression ratio
-	long myFileSize;
-	long newDocSize;
-	myFileSize = ftell(myFile);
-	newDocSize = ftell(newDoc);
-	printf("Compression ratio:%ld\n", compression_ratio(newDocSize, myFileSize));
+	long permFileSize;
+	long tmpFileSize;
+	permFileSize = ftell(permFile);
+	tmpFileSize = ftell(tmpFile);
+	printf("Compression ratio:%ld\n", compression_ratio(tmpFileSize, permFileSize));
 
-	fclose(myFile);
-	fclose(newDoc);
+	if (fclose(permFile) != 0 || fclose(tmpFile) != 0) {
+		printf("fclose() failed.\n");
+		exit(1);
+	}
 
 	return 0; //success
+}
+
+void folderDecompress (char *folder) {
+	//TODO - dummy warning supression code
+	printf("%s\n", folder);
 }
