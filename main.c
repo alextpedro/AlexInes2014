@@ -60,16 +60,12 @@ int main(int argc, char *argv[])
 		decompress(args.decompress_arg);
 	}
 
+	//Folder decompression
 	if (args.folder_decompress_arg)
 	{
-		printf("%s\n", args.folder_decompress_arg);
-		//funcao a fazer
+		folderDecompress(args.folder_decompress_arg);
+		
 	}
-	
-	//Folder decompression
-	// if (args.folder-decompress_arg) {
-	// 	folder_decompress(args.folder-decompress_arg);
-	// }
 
 	//Treatment of unimplemented arguments.
 	if(args.compress_given)
