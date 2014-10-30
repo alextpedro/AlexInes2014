@@ -53,11 +53,11 @@ void decompress (char *filename) {
 	}
 
 	//Allocate memory for the dictionary
-	char **words = malloc (sizeof(char*) * (numberOfWords+15));
+	char **words = MALLOC (sizeof(char*) * (numberOfWords+15) +1);
 
 	unsigned int k = 0;
 	for (k = 0; k < numberOfWords+16; ++k) {
-		words[k] = malloc (sizeof(char)*100);
+		words[k] = MALLOC (sizeof(char)*100);
 	}
 
 	//Read each line in the file until the number of words indicated in the header has been reached.
@@ -69,20 +69,35 @@ void decompress (char *filename) {
 		i++;
 	}
 	//Initialize the dictionary with separators
-	words[1]="\n";
-	words[2]="\r";
-	words[3]="\t";
-	words[4]=" ";
-	words[5]="?";
-	words[6]="!";
-	words[7]=".";
-	words[8]=";";
-	words[9]=",";
-	words[10]=":";
-	words[11]="+";
-	words[12]="-";
-	words[13]="*";
-	words[14]="/";
+	strcpy(words[1],"\n");
+	strcpy(words[2],"\r");
+	strcpy(words[3],"\t");
+	strcpy(words[4]," ");
+	strcpy(words[5],"?");
+	strcpy(words[6],"!");
+	strcpy(words[7],".");
+	strcpy(words[8],";");
+	strcpy(words[9],",");
+	strcpy(words[10],":");
+	strcpy(words[11],"+");
+	strcpy(words[12],"-");
+	strcpy(words[13],"*");
+	strcpy(words[14],"/");
+
+	// words[1]="\n";
+	// words[2]="\r";
+	// words[3]="\t";
+	// words[4]=" ";
+	// words[5]="?";
+	// words[6]="!";
+	// words[7]=".";
+	// words[8]=";";
+	// words[9]=",";
+	// words[10]=":";
+	// words[11]="+";
+	// words[12]="-";
+	// words[13]="*";
+	// words[14]="/";
 	
 	//TODO
 	// if(sizeof(words) >= ) {
@@ -96,11 +111,11 @@ void decompress (char *filename) {
 	
 	//Free memory from words.
 	unsigned int j = 0;
-	for (j = 0; j < numberOfWords+15; ++j)
+	for (j = 0; j < numberOfWords+16; ++j)
 	{
-		free(words[j]);
+		FREE(words[j]);
 	}
-	free(words);
+	FREE(words);
 
 	if(fclose(myFile) != 0) {
 		printf("fclose() failed.\n");
