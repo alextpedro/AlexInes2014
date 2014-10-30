@@ -12,6 +12,8 @@
 #include "debug.h"
 #include "memory.h"
 
+#define DIC_HEAD 15
+
 /**
  * @brief Decompresses a .palz file 
  * @details Function receives a filename, opens it, verifies that it is a valid .palz file with a valid dictionary and starts the proceedures to decompress the file into a new one, or itself, depending on whether or not the file given has a .palz extension.
@@ -53,19 +55,19 @@ void decompress (char *filename) {
 	}
 
 	//Allocate memory for the dictionary
-	char **words = malloc (sizeof(char*) * (numberOfWords+15));
+	char **words = MALLOC (sizeof(char*) * (numberOfWords+DIC_HEAD));
 
 	unsigned int k = 0;
-	for (k = 0; k < numberOfWords+16; ++k) {
-		words[k] = malloc (sizeof(char)*100);
+	for (k = 0; k <= numberOfWords + DIC_HEAD; ++k) {
+		words[k] = MALLOC (sizeof(char)*100);
 	}
 
 	//Read each line in the file until the number of words indicated in the header has been reached.
 	unsigned int i = 0;
-	while (i < numberOfWords) {
+	while (i < numberOfWords && running == 1) {
 		read = getline(&line, &len, myFile);
-		line [read-1]=0; //Removes the line break
-		words [i+15] = strdup(line);
+		line [read-1]='\0'; //Removes the line break
+		words [i+DIC_HEAD] = strdup(line);
 		i++;
 	}
 	//Initialize the dictionary with separators
@@ -96,11 +98,11 @@ void decompress (char *filename) {
 	
 	//Free memory from words.
 	unsigned int j = 0;
-	for (j = 0; j < numberOfWords+15; ++j)
+	for (j = 0; j <= numberOfWords+DIC_HEAD && running == 1; ++j)
 	{
-		free(words[j]);
+		FREE(words[j]);
 	}
-	free(words);
+	FREE(words);
 
 	if(fclose(myFile) != 0) {
 		printf("fclose() failed.\n");
@@ -171,11 +173,11 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	int bytes = bytes_for_int(numberOfWords+15);
 	unsigned int prev_code = 0;
 	int i;
-	while (fread(&code, bytes , 1, compressed) > 0) {
+	while (fread(&code, bytes , 1, compressed) > 0 && running == 1) {
 		//detect repetitions
 		if (code == 0 ) {
 			//check if prev code exists and is separator
-			for (i = 1; i < 15; ++i) {
+			for (i = 1; i < DIC_HEAD && running == 1; ++i) {
 				//prev code is a separator
 				if(prev_code >= 4 && prev_code < 15){
 					break; //exit for cycle
@@ -185,7 +187,7 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 
 			//read next line
 			fread(&code, bytes , 1, compressed);
-			while (code != 0) {
+			while (code != 0 && running ==1) {
 				fputs (words[prev_code], tmpFile);
 				code--;
 			}
@@ -207,7 +209,7 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	//Searches and removes .palz extension if it exists
 	char *ptr = NULL;
 	ptr = strrchr(filename, '.');
-	if (ptr != NULL && strcasecmp(ptr, ".palz") == 0)
+	if (ptr != NULL && strcasecmp(ptr, ".palz") == 0 && running == 1)
 	{
 		*ptr = 0; 
 	}
@@ -224,7 +226,7 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	//Copy from the temporary file to the permanent file
 	char buffer[8096];
 	int n;
-	while( (n=fread(buffer, 1, 8096, tmpFile)) > 0) {
+	while( (n=fread(buffer, 1, 8096, tmpFile) && running == 1) > 0) {
 	 	fwrite(buffer, 1, n, permFile);
 	}
 
@@ -236,7 +238,7 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	tmpFileSize = ftell(tmpFile);
 	printf("Compression ratio:%ld\n", compression_ratio(tmpFileSize, permFileSize));
 
-	if (fclose(permFile) != 0 || fclose(tmpFile) != 0) {
+	if (fclose(permFile) != 0 || fclose(tmpFile) != 0 && running == 1) {
 		printf("fclose() failed.\n");
 		exit(1);
 	}

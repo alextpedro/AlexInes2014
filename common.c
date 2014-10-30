@@ -28,6 +28,12 @@ void signal_handler (int signal) {
 	running = 0;
 }
 
+void catch_signal () {
+	if (running == 0) {
+		
+	}
+}
+
 long compression_ratio(long sizeOfCompressed, long sizeOfDecompressed) {
 	long ratio = 0;
 
