@@ -163,20 +163,29 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	int bytes = bytes_for_int(numberOfWords+15);
 	unsigned int prev_code = 0;
 	while (fread(&code, bytes , 1, compressed)>0 && running == 1) {
-		//detect repetitions
-		if (code == 0 ) {
-			//check if prev code exists and is separator
-			//read next line
-			fread(&code, bytes , 1, compressed);
-			while (code != 0 && running ==1) {
-				fputs (words[prev_code], newDoc);
+		//if (code > numberOfWords+16) {
+			//fprintf(stderr, "Failed: Decompression error on %s\n", filename);
+		//}
+		//else {
+			//detect repetitions
+			if (code == 0 ) {
+				if (prev_code == 0) {
+					fprintf(stderr,"Failed: %s decompression error.\n", filename);
+				}
+				//read next line
+				fread(&code, bytes , 1, compressed);
+
+				while (code != 0 && running ==1) {
+				fputs (words[prev_code], newDoc); //I think segfault comes form here
 				code--;
+				}
+				
+			}//code is not a repetition
+			else {
+				fputs (words[code], newDoc);
+				prev_code = code;
 			}
-		}//code is not a repetition
-		else {
-			fputs (words[code], newDoc);
-			prev_code = code;
-		}
+		//}
 	}
 
 	if (!feof(compressed)){
