@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
+#include <dirent.h>
 
 #include "etapa1.h"
 #include "common.h"
@@ -253,7 +254,7 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	tmpFileSize = ftell(tmpFile);
 	printf("Compression ratio:%ld\n", compression_ratio(tmpFileSize, permFileSize));
 
-	if (fclose(permFile) != 0 || fclose(tmpFile) != 0 && running == 1) {
+	if ( ( fclose(permFile) != 0 || fclose(tmpFile) != 0 ) && running == 1) {
 		printf("fclose() failed.\n");
 		exit(1);
 	}
@@ -261,7 +262,20 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	return 0; //success
 }
 
-void folderDecompress (char *folder) {
-	//TODO - dummy warning supression code
-	printf("%s\n", folder);
+int folderDecompress (char *folder) {
+	DIR *dir = opendir(folder);
+
+	if (dir == NULL) {
+		WARNING("opendir() failed");
+		return -1;
+	}
+
+	struct dirent *pDirent;
+
+	while ( ( pDirent = readdir(dir) ) != NULL){
+		decompress(pDirent->d_name);
+	}
+
+	closedir(dir);
+	return 0;
 }

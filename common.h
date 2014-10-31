@@ -10,5 +10,6 @@
 
 	void trata_sinal (int signal);
 	void install_signal_handler (void);
+	void catch_signal();
 	long compression_ratio(long sizeOfCompressed, long sizeOfDecompressed);
 #endif
