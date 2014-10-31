@@ -9,9 +9,9 @@
 
 int running = 1;
 
-static void signal_handler (int);
+static void signal_handler(int);
 
-void install_signal_handler (void) {
+void install_signal_handler(void) {
 	struct sigaction config;
 
 	config.sa_handler = signal_handler;
@@ -23,7 +23,7 @@ void install_signal_handler (void) {
 	}
 }
 
-void signal_handler (int signal) {
+void signal_handler(int signal) {
 	(void) signal;
 	running = 0;
 	
@@ -31,7 +31,7 @@ void signal_handler (int signal) {
 
 void catch_signal () {
 	if (running == 0) {
-		
+		//shut down program
 	}
 }
 

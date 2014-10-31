@@ -12,5 +12,4 @@
 	void install_signal_handler (void);
 	float compression_ratio(float sizeOfCompressed, float sizeOfDecompressed);
 	void catch_signal (void);
-
 #endif

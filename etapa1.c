@@ -8,14 +8,21 @@
 #include <limits.h>
 #include <math.h>
 #include <dirent.h>
+<<<<<<< HEAD
 #include <sys/types.h>
 #include <sys/stat.h>
+=======
+>>>>>>> 2a900a9222353a2135804f49ac429150b641489f
 
 #include "etapa1.h"
 #include "common.h"
 #include "debug.h"
 #include "memory.h"
 
+<<<<<<< HEAD
+=======
+#define DIC_HEAD 15
+>>>>>>> 2a900a9222353a2135804f49ac429150b641489f
 
 /**
  * @brief Decompresses a .palz file 
@@ -26,7 +33,13 @@
 void decompress (char *filename) {
 	//Open the given file
 	FILE *myFile = NULL;
+
 	myFile = fopen(filename, "r");
+
+	if (myFile == NULL){
+		printf("fopen() failed.\n");
+		exit(1);
+	}
 
 	//Read the first line for PALZ headline
 	char *line = NULL;
@@ -37,62 +50,114 @@ void decompress (char *filename) {
 
 	//Verify if it's a valid .palz file.
 	if (!is_header_PALZ(line)){
+<<<<<<< HEAD
 		fprintf(stderr, "Failed: %s is not a valid .palz file\n", filename);
+=======
+		printf("Failed: %s is not a valid .palz file.\n", filename);
+>>>>>>> 2a900a9222353a2135804f49ac429150b641489f
 		fclose(myFile);
 		exit(1);
 	}
 
-	//Read the second line for the number of words 
+	//Read the second line for the number of words in the dictionary.
 	read = getline(&line, &len, myFile);
 	unsigned int numberOfWords = 0;
+<<<<<<< HEAD
 	if (!is_valid_size(line, &numberOfWords, filename)) {
 		//fprintf(stderr,"Failed: %s is corrupted\n", filename);
+=======
+	if (!is_valid_size(line, &numberOfWords)) {
+		printf("Failed: %s has an invalid number of words.\n", filename);
+>>>>>>> 2a900a9222353a2135804f49ac429150b641489f
 		fclose(myFile);
 		exit(1);
 	}
 
-	//Allocate memory for the words
-	char **words = malloc (sizeof(char*)*(numberOfWords+15));
+	//Allocate memory for the dictionary
+	char **words = MALLOC (sizeof(char*) * (numberOfWords+15) +1);
 
+<<<<<<< HEAD
+=======
+	unsigned int k = 0;
+	for (k = 0; k < numberOfWords+16; ++k) {
+		words[k] = MALLOC (sizeof(char)*100);
+	}
+
+>>>>>>> 2a900a9222353a2135804f49ac429150b641489f
 	//Read each line in the file until the number of words indicated in the header has been reached.
 	unsigned int i = 0;
-	while (i < numberOfWords) {
+	while (i < numberOfWords && running == 1) {
 		read = getline(&line, &len, myFile);
-		line [read-1]=0; //Removes the line break
-		words [i+15] = strdup(line);
+		line [read-1]='\0'; //Removes the line break
+		words [i+DIC_HEAD] = strdup(line);
 		i++;
 	}
-	//Initialize the dictionary
-	words[1]="\n";
-	words[3]="\r";
-	words[2]="\t";
-	words[4]=" ";
-	words[5]="?";
-	words[6]="!";
-	words[7]=".";
-	words[8]=";";
-	words[9]=",";
-	words[10]=":";
-	words[11]="+";
-	words[12]="-";
-	words[13]="*";
-	words[14]="/";
+	//Initialize the dictionary with separators
+	strcpy(words[1],"\n");
+	strcpy(words[2],"\r");
+	strcpy(words[3],"\t");
+	strcpy(words[4]," ");
+	strcpy(words[5],"?");
+	strcpy(words[6],"!");
+	strcpy(words[7],".");
+	strcpy(words[8],";");
+	strcpy(words[9],",");
+	strcpy(words[10],":");
+	strcpy(words[11],"+");
+	strcpy(words[12],"-");
+	strcpy(words[13],"*");
+	strcpy(words[14],"/");
+
+	// words[1]="\n";
+	// words[2]="\r";
+	// words[3]="\t";
+	// words[4]=" ";
+	// words[5]="?";
+	// words[6]="!";
+	// words[7]=".";
+	// words[8]=";";
+	// words[9]=",";
+	// words[10]=":";
+	// words[11]="+";
+	// words[12]="-";
+	// words[13]="*";
+	// words[14]="/";
 	
+<<<<<<< HEAD
 	
 	if(sizeof(words) >= pow(2,24)) {
 		fprintf(stderr,"Failed: %s dictionary is too big\n", filename);
 	}
+=======
+	//TODO
+	// if(sizeof(words) >= ) {
+	// 	printf("Failed: %s dictionary is too big.\n", filename);
+	// }
+>>>>>>> 2a900a9222353a2135804f49ac429150b641489f
 
 	//start decompression and write to file
 	write_to_file(words, filename, myFile, numberOfWords);
+
 	
+	
+<<<<<<< HEAD
 	FREE(words);
 
+=======
+	//Free memory from words.
+	unsigned int j = 0;
+	for (j = 0; j < numberOfWords+16; ++j)
+	{
+		FREE(words[j]);
+	}
+	FREE(words);
+>>>>>>> 2a900a9222353a2135804f49ac429150b641489f
 
 	if(fclose(myFile) != 0) {
 		printf("fclose() failed.\n");
 		exit(1);
 	}
+
 }
 
 int is_header_PALZ (const char *header_first_row) {
@@ -128,7 +193,11 @@ int is_valid_size(const char *str, unsigned int *value, char *filename) {
 		return 0;
 	}
 
+<<<<<<< HEAD
 	if (number >= pow(2,24))
+=======
+	if (number < 0 || number > pow(2,24))
+>>>>>>> 2a900a9222353a2135804f49ac429150b641489f
 	{
 		fprintf(stderr,"Failed: %s dictionary is too big\n", filename);
 		return 0;
@@ -139,7 +208,11 @@ int is_valid_size(const char *str, unsigned int *value, char *filename) {
 }
 
 int bytes_for_int(unsigned int max_value) {
+<<<<<<< HEAD
 	double nbits = log2(((double)max_value));
+=======
+	double nbits = log2(((double)max_value)+1);
+>>>>>>> 2a900a9222353a2135804f49ac429150b641489f
 	int nbytes = ceil(nbits/8); 
 
 	return nbytes;
@@ -166,6 +239,14 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 		//detect repetitions
 		if (code == 0 ) {
 			//check if prev code exists and is separator
+			for (i = 1; i < DIC_HEAD && running == 1; ++i) {
+				//prev code is a separator
+				if(prev_code >= 4 && prev_code < 15){
+					break; //exit for cycle
+				}
+				else { return -1; } //error leave function
+			}
+
 			//read next line
 			fread(&code, bytes , 1, compressed);
 			while (code != 0 && running ==1) {
@@ -174,7 +255,7 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 			}
 		}//code is not a repetition
 		else {
-			fputs (words[code], newDoc);
+			fputs (words[code], tmpFile);
 			prev_code = code;
 		}
 	}
@@ -194,17 +275,20 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	}
 
 	//Write to file
-	FILE *myFile = NULL;
-	rewind(newDoc);
-	myFile = fopen(filename, "w");
+	FILE *permFile = NULL;
+
+	permFile = fopen(filename, "w");
+	if (permFile == NULL) {
+		printf("fopen() failed.\n");
+	}
+	rewind(tmpFile);
 
 	//Copy from the temporary file to the permanent file
 	char buffer[8096];
 	int n;
-	while( (n=fread(buffer, 1, 8096, newDoc)) > 0) {
-	 	fwrite(buffer, 1, n, myFile);
+	while( (n=fread(buffer, 1, 8096, tmpFile) && running == 1) > 0) {
+	 	fwrite(buffer, 1, n, permFile);
 	}
-	fflush(myFile);
 
 
 	//Return the compression ratio
@@ -250,8 +334,6 @@ int folderDecompress(const char *dirname) {
         char *fullname = MALLOC(strlen(dirname) + strlen(pDirent->d_name) + 2);
 
         sprintf(fullname, "%s/%s", dirname, pDirent->d_name);
-
-        //printf("%s\n", fullname);
 
         struct stat info;
 

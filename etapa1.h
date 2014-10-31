@@ -11,5 +11,4 @@ int bytes_for_int(unsigned int max_value);
 int folderDecompress(const char *dirname);
 int is_extension_palz (const char *fullfilename);
 
-
 #endif

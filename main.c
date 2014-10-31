@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	struct timespec init_op, end_op;
 
 	/* Main code */
-	//Temporary validation code
+	//Cannot have more than 5 arguments at any time
 	if (argc > 5) {
 		printf("Invalid number of arguments. Try: ./palz --help \n");
 		exit(1);
@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	//Simple single file decompression
 	if (args.decompress_arg)
 	{
 		decompress(args.decompress_arg);
