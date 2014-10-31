@@ -39,6 +39,7 @@ float compression_ratio(float sizeOfCompressed, float sizeOfDecompressed) {
 	float ratio = 0;
 
 	if (sizeOfDecompressed == 0) {
+		printf("Do not divide by 0... it messes with the universe.");
 		return ratio;
 	}
 

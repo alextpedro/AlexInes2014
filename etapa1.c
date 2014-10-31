@@ -1,17 +1,28 @@
 /*@author Alexandra Pedro 2131314@my.ipleiria.pt && 
  * Inês Faria 2110922@my.ipleiria.pt */
 #include <stdio.h>
+#include <string.h>
 #include <memory.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <math.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "etapa1.h"
 #include "common.h"
 #include "debug.h"
 #include "memory.h"
 
+
+/**
+ * @brief Decompresses a .palz file 
+ * @details Function receives a filename, opens it, verifies that it is a valid .palz file with a valid dictionary and starts the proceedures to decompress the file into a new one, or itself, depending on whether or not the file given has a .palz extension.
+ * 
+ * @param filename Pointer to filename passed by the command line arguments. 
+ */
 void decompress (char *filename) {
 	//Open the given file
 	FILE *myFile = NULL;
@@ -24,23 +35,24 @@ void decompress (char *filename) {
 
 	read = getline(&line, &len, myFile);
 
+	//Verify if it's a valid .palz file.
 	if (!is_header_PALZ(line)){
-		printf("Failed: %s is not a valid .palz file.\n", filename);
+		fprintf(stderr, "Failed: %s is not a valid .palz file\n", filename);
+		fclose(myFile);
 		exit(1);
 	}
 
 	//Read the second line for the number of words 
 	read = getline(&line, &len, myFile);
 	unsigned int numberOfWords = 0;
-	if (!is_valid_size(line, &numberOfWords)) {
-		printf("Failed: %s has an invalid number of words.\n", filename);
+	if (!is_valid_size(line, &numberOfWords, filename)) {
+		//fprintf(stderr,"Failed: %s is corrupted\n", filename);
+		fclose(myFile);
 		exit(1);
 	}
 
 	//Allocate memory for the words
 	char **words = malloc (sizeof(char*)*(numberOfWords+15));
-
-	DEBUG("%u", numberOfWords);
 
 	//Read each line in the file until the number of words indicated in the header has been reached.
 	unsigned int i = 0;
@@ -66,25 +78,29 @@ void decompress (char *filename) {
 	words[13]="*";
 	words[14]="/";
 	
-	//TODO
-	if(sizeof(words) >= (2^24)) {
-		printf("Failed: %s dictionary is too big.\n", filename);
+	
+	if(sizeof(words) >= pow(2,24)) {
+		fprintf(stderr,"Failed: %s dictionary is too big\n", filename);
 	}
 
-	//for (i = 0; i < numberOfWords; i++) {
-	//	DEBUG ("%s", words[i]);
-	//}
+	//start decompression and write to file
 	write_to_file(words, filename, myFile, numberOfWords);
 	
+	FREE(words);
 
-	free(words); //for free de 15 ao fim
+
 	if(fclose(myFile) != 0) {
-		//treat error
+		printf("fclose() failed.\n");
+		exit(1);
 	}
 }
 
 int is_header_PALZ (const char *header_first_row) {
 	return (strcmp(header_first_row, "PALZ\n") == 0);		
+}
+
+int is_extension_palz (const char *fullfilename) {
+	return (strstr(fullfilename, ".palz") ? 0 : -1);		
 }
 
 /**
@@ -96,13 +112,14 @@ int is_header_PALZ (const char *header_first_row) {
  * 
  * @return Returns 1 if successful, 0 otherwise.
  */
-int is_valid_size(const char *str, unsigned int *value) {
+int is_valid_size(const char *str, unsigned int *value, char *filename) {
 	char *endptr;
 
 	errno=0;
 	long long number = strtoll(str, &endptr, 10);
-	if (*endptr != '\0' && *endptr != '\n')
+	if (number < 0 || (*endptr != '\0' && *endptr != '\n'))
 	{
+		fprintf(stderr, "Failed: %s is corrupted\n", filename);
 		return 0;
 	}
 
@@ -111,8 +128,9 @@ int is_valid_size(const char *str, unsigned int *value) {
 		return 0;
 	}
 
-	if (number < 0 || number > UINT_MAX)
+	if (number >= pow(2,24))
 	{
+		fprintf(stderr,"Failed: %s dictionary is too big\n", filename);
 		return 0;
 	}
 
@@ -121,9 +139,8 @@ int is_valid_size(const char *str, unsigned int *value) {
 }
 
 int bytes_for_int(unsigned int max_value) {
-	double nbits = log2(((double)max_value)+1);
-	int nbytes = ceil(nbits/8);
-	//return ceil(log2(max_value+1)/8); 
+	double nbits = log2(((double)max_value));
+	int nbytes = ceil(nbits/8); 
 
 	return nbytes;
 }
@@ -138,25 +155,24 @@ int bytes_for_int(unsigned int max_value) {
  * @return Returns 0 on success.
  */
 int write_to_file (char** words, char *filename, FILE* compressed, unsigned int numberOfWords) {
-	//TODO unfinished 
+	
 	FILE *newDoc = tmpfile();
 	unsigned int code = 0;
 
 	//Decompress
 	int bytes = bytes_for_int(numberOfWords+15);
 	unsigned int prev_code = 0;
-	while (fread(&code, bytes , 1, compressed)>0) {
-		DEBUG("%u", code);
+	while (fread(&code, bytes , 1, compressed)>0 && running == 1) {
 		//detect repetitions
 		if (code == 0 ) {
 			//check if prev code exists and is separator
 			//read next line
-			fread(&code, bytes , 1, compressed)
-			while (code != 0) {
+			fread(&code, bytes , 1, compressed);
+			while (code != 0 && running ==1) {
 				fputs (words[prev_code], newDoc);
 				code--;
 			}
-		}
+		}//code is not a repetition
 		else {
 			fputs (words[code], newDoc);
 			prev_code = code;
@@ -168,19 +184,11 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 		DEBUG("read error");
 	}
 
-	//unsigned int i = 0;
-	//while (i < numberOfWords+15) {
-	// 		fputs(words[i], newDoc); //EOF if error
-	// 		i++;
-	// } 
-	// rewind(newDoc);
-
 
 	//Searches and removes .palz extension if it exists
 	char *ptr = NULL;
-	DEBUG ("%s", filename);
 	ptr = strrchr(filename, '.');
-	if (ptr != NULL && strcasecmp(ptr, ".palz") == 0)
+	if (ptr != NULL && strcasecmp(ptr, ".palz") == 0 && running == 1)
 	{
 		*ptr = 0; 
 	}
@@ -190,6 +198,7 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	rewind(newDoc);
 	myFile = fopen(filename, "w");
 
+	//Copy from the temporary file to the permanent file
 	char buffer[8096];
 	int n;
 	while( (n=fread(buffer, 1, 8096, newDoc)) > 0) {
@@ -199,14 +208,83 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 
 
 	//Return the compression ratio
-	long myFileSize;
-	long newDocSize;
-	myFileSize = ftell(myFile);
+	float compressedSize;
+	float newDocSize;
+	compressedSize = ftell(compressed);
 	newDocSize = ftell(newDoc);
-	printf("Compression ratio:%ld\n", compression_ratio(newDocSize, myFileSize));
+	printf("Compression ratio: %s %4.2f%%\n", filename, compression_ratio(compressedSize, newDocSize));
 
-	fclose(myFile);
-	fclose(newDoc);
-
+	if ((fclose(myFile) != 0) || ((fclose(newDoc) != 0) && (running == 1))) {
+		printf("fclose() failed.\n");
+		exit(1);
+	}
+	
 	return 0; //success
+}
+
+/**
+ * @brief [brief description]
+ * @details [long description]
+ * 
+ * @param dirname [description]
+ * @return [description]
+ */
+int folderDecompress(const char *dirname) {
+
+    DIR *dir = opendir(dirname);
+    
+    if( dir == NULL ) {
+
+        WARNING("opendir() failed");
+        return -1;
+
+    }
+
+    struct dirent *pDirent;
+
+    while( running && (pDirent = readdir(dir)) != NULL ) {
+
+        if( strcmp(pDirent->d_name, ".") == 0 || strcmp(pDirent->d_name, "..") == 0 )
+            continue;
+
+        char *fullname = MALLOC(strlen(dirname) + strlen(pDirent->d_name) + 2);
+
+        sprintf(fullname, "%s/%s", dirname, pDirent->d_name);
+
+        //printf("%s\n", fullname);
+
+        struct stat info;
+
+        if( lstat(fullname, &info) != 0 ) {
+
+            WARNING("lstat() failed for item %s", fullname);
+            return -1;
+
+        }
+
+        if( S_ISDIR(info.st_mode) ) {
+
+            folderDecompress(fullname);
+
+        } else {
+
+			if (is_extension_palz(fullname) == -1)
+			{
+				//printf("ext null %s\n", fullname);
+				fprintf(stderr, "Failed: %s is not a valid .palz file\n", fullname);
+               
+			}else{
+				printf("Decompress file %s\n", fullname);
+            	decompress(fullname);
+			}
+		         
+        }
+
+        FREE(fullname);
+
+    }
+
+    closedir(dir);
+    return 0;
+
 }

@@ -42,11 +42,12 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	if (argc < 3) {
+	if (argc < 2) {
 		printf("Invalid number of arguments. Try: ./palz --help \n");
 		exit(1);
 	}
 
+	//Initialize the operation clock.
 	if (clock_gettime(CLOCK_REALTIME, &init_op) == -1)
 	{
 		printf("clock_gettime() failed.\n");
@@ -57,7 +58,15 @@ int main(int argc, char *argv[])
 	{
 		decompress(args.decompress_arg);
 	}
-	
+
+	//Folder decompression
+	if (args.folder_decompress_arg)
+	{
+		folderDecompress(args.folder_decompress_arg);
+		
+	}
+
+	//Treatment of unimplemented arguments.
 	if(args.compress_given)
 	{
 		printf("[TODO] option not implemented yet. \n");
@@ -95,7 +104,7 @@ int main(int argc, char *argv[])
 	********************************/
 	double total_op_time;
 	total_op_time = (end_op.tv_sec - init_op.tv_sec) + (end_op.tv_nsec - init_op.tv_nsec)/1000000000.0;
-	printf("Execution time:%lf\n", total_op_time);
+	printf("Execution time:%lfs\n", total_op_time);
 
 	//End of Code
 	cmdline_parser_free(&args);
