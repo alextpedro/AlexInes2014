@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 	//Simple single file decompression
 	if (args.decompress_arg)
 	{
-		decompress(args.decompress_arg);
+		decompress(args.decompress_arg, 1);
 	}
 
 	//Folder decompression
