@@ -59,7 +59,8 @@ void decompress (char *filename, int function) {
 	}
 
 	//Allocate memory for the words
-	char **words = malloc (sizeof(char*)*(numberOfWords+DICT));
+	char **words = MALLOC (sizeof(char*)*(numberOfWords+DICT));
+
 
 	//Read each line in the file until the number of words indicated in the header has been reached.
 	unsigned int i = 0;
@@ -101,11 +102,7 @@ void decompress (char *filename, int function) {
 	//start decompression and write to file
 	write_to_file(words, filename, myFile, numberOfWords, function);
 	
-	//Free dynamically allocated memory
-	unsigned int aux = 0;
-	for (aux = 0; aux < numberOfWords + DICT; aux++) {
-		FREE(words[aux]);
-	}
+
 	FREE(words);
 	FREE (line);
 

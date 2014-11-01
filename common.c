@@ -14,6 +14,7 @@ static void signal_handler(int);
 void install_signal_handler(void) {
 	struct sigaction config;
 
+	catch_signal();
 	config.sa_handler = signal_handler;
 	sigemptyset(&config.sa_mask);
 	config.sa_flags = SA_RESTART;
@@ -31,7 +32,7 @@ void signal_handler(int signal) {
 
 void catch_signal () {
 	if (running == 0) {
-		//shut down program
+		printf("Operation interrupted by user @<todo date and time>\n");
 	}
 }
 
