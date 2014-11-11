@@ -15,6 +15,7 @@
 #include "common.h"
 #include "debug.h"
 #include "memory.h"
+#include "listas.h"
 
 #define DICT 15
 /**
@@ -38,9 +39,11 @@ void decompress (char *filename, int function) {
 	//Verify if it's a valid .palz file.
 	if (!palz){
 		fprintf(stderr, "Failed: %s is not a valid .palz file\n", filename);
+		fclose(myFile);
 		if(function ==1) {
 			exit(1);
 		} else {
+			FREE (line);
 			return;
 		}
 	}
@@ -50,10 +53,10 @@ void decompress (char *filename, int function) {
 	unsigned int numberOfWords = 0;
 	int size = is_valid_size(line, &numberOfWords, filename);
 	if (!size) {
-		//fprintf(stderr,"Failed: %s is corrupted\n", filename);
-		if(function ==1) {
+		if(function == 1) {
 			exit(1);
 		} else {
+			FREE (line);
 			return;
 		}
 	}
@@ -71,6 +74,8 @@ void decompress (char *filename, int function) {
 			if(function ==1) {
 				exit(1);
 			} else {
+				FREE (line);
+				FREE (words);
 				return;
 			}
 		}
@@ -102,14 +107,12 @@ void decompress (char *filename, int function) {
 	//start decompression and write to file
 	write_to_file(words, filename, myFile, numberOfWords, function);
 	
-
+	int auxis = DICT;
+	for (auxis; auxis < numberOfWords+DICT; auxis++){
+		FREE(words[auxis]);
+	}
 	FREE(words);
 	FREE (line);
-
-	if(fclose(myFile) != 0) {
-		printf("fclose() failed.\n");
-		exit(1);
-	}
 }
 
 int is_header_PALZ (const char *header_first_row) {
@@ -238,6 +241,7 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
 	 	fwrite(buffer, 1, n, outFile);
 	}
 	fflush(outFile);
+	fclose(newDoc);
 
 
 	//Return the compression ratio
@@ -262,61 +266,57 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
  * @param dirname Name of the folder (directory) to decompress.
  * @return Returns 0 if succesful.
  */
-int folderDecompress(const char *dirname) {
+int folderDecompress (const char *dirname) {
+	int function = 2;
+	LISTA_GENERICA_T* listOfDir = lista_criar(NULL);
+	lista_inserir_inicio(listOfDir, strdup(dirname));
 
-    DIR *dir = opendir(dirname);
-    int function = 2;
-    
-    if( dir == NULL ) {
+	while (lista_numero_elementos(listOfDir) > 0) {
+		char *fdirname = lista_remover_inicio(listOfDir);
+		DIR *workdir = opendir(fdirname);
+		struct dirent *entry;
 
-        WARNING("opendir() failed");
-        return -1;
+		while ( ( entry = readdir(workdir) ) ) {
+			if( strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 )
+            	continue;
 
-    }
+        	char *fullname = MALLOC(strlen(dirname) + strlen(entry->d_name) + 2);
 
-    struct dirent *pDirent;
+        	sprintf(fullname, "%s/%s", dirname, entry->d_name);
 
-    while( running && (pDirent = readdir(dir)) != NULL ) {
+        	struct stat info;
 
-        if( strcmp(pDirent->d_name, ".") == 0 || strcmp(pDirent->d_name, "..") == 0 )
-            continue;
-
-        char *fullname = MALLOC(strlen(dirname) + strlen(pDirent->d_name) + 2);
-
-        sprintf(fullname, "%s/%s", dirname, pDirent->d_name);
-
-        struct stat info;
-
-        if( lstat(fullname, &info) != 0 ) {
+        	if( lstat(fullname, &info) != 0 ) {
 
             WARNING("lstat() failed for item %s", fullname);
             return -1;
 
-        }
+        	}
 
-        if( S_ISDIR(info.st_mode) ) {
+	        if( S_ISDIR(info.st_mode) ) {
 
-            folderDecompress(fullname);
+	            folderDecompress(fullname);
 
-        } else {
+	        } else {
 
-			if (is_extension_palz(fullname) == -1)
-			{
-				FREE(fullname);
-				continue;
-               
-			}else{
-				printf("Decompress file %s\n", fullname);
-            	decompress(fullname, function);
-			}
+				if (is_extension_palz(fullname) == -1)
+				{
+					FREE(fullname);
+					continue;
+	               
+				}else{
+					printf("Decompress file %s\n", fullname);
+	            	decompress(fullname, function);
+				}
 		         
-        }
+        	}
 
-        FREE(fullname);
+        	FREE(fullname);
+		}
+		closedir(workdir);
+		FREE(fdirname);
+	}
 
-    }
-
-    closedir(dir);
-    return 0;
-
+	lista_destruir(&listOfDir);
+	return 0;
 }
