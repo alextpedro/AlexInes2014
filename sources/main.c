@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 	//Gengetopt arguments
 	struct gengetopt_args_info args; 
 	cmdline_parser(argc,argv,&args);
-	struct timespec init_op, end_op;
+	struct timespe cinit_op, end_op;
 
 	/* Main code */
 	//Cannot have more than 5 arguments at any time

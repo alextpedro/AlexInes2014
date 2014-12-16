@@ -27,8 +27,11 @@
 *.i*86
 *.x86_64
 *.hex
+
+# PALZ
 palz
 pa-test-decompress.pl
 /tests
 config.h
 /dirteste
+relatorio_2131314_2110922_etapa1.doc
