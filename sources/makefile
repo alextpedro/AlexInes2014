@@ -25,7 +25,7 @@ PROGRAM=palz
 PROGRAM_OPT=config
 
 # Object files required to build the executable
-PROGRAM_OBJS=main.o debug.o memory.o etapa1.o ${PROGRAM_OPT}.o common.o listas.o
+PROGRAM_OBJS=main.o debug.o memory.o etapa1.o etapa2.o ${PROGRAM_OPT}.o common.o listas.o hashtables.o
 
 # Clean and all are not files
 .PHONY: clean all docs indent debugon
@@ -40,13 +40,14 @@ ${PROGRAM}: ${PROGRAM_OBJS}
 	${CC} -o $@ ${PROGRAM_OBJS} ${LIBS}
 
 # Dependencies
-main.o: main.c debug.h memory.h ${PROGRAM_OPT}.h etapa1.h common.h
+main.o: main.c debug.h memory.h ${PROGRAM_OPT}.h etapa1.h etapa2.h common.h listas.o hashtables.o
 ${PROGRAM_OPT}.o: ${PROGRAM_OPT}.c ${PROGRAM_OPT}.h
 
 debug.o: debug.c debug.h
 memory.o: memory.c memory.h
 common.o: common.c common.h debug.h memory.h
 etapa1.o: etapa1.c etapa1.h debug.h memory.h common.h listas.h
+etapa2.o: etapa2.c etapa2.h debug.h memory.h common.h listas.h hashtables.h
 listas.o: listas.c listas.h
 hashtables.o: hashtables.c hashtables.h listas.h
 

@@ -25,6 +25,7 @@
 #include "debug.h"
 #include "memory.h"
 #include "etapa1.h"
+#include "etapa2.h"
 #include "config.h"
 
 
@@ -33,7 +34,7 @@ int main(int argc, char *argv[])
 	//Gengetopt arguments
 	struct gengetopt_args_info args; 
 	cmdline_parser(argc,argv,&args);
-	struct timespe cinit_op, end_op;
+	struct timespec init_op, end_op;
 
 	/* Main code */
 	//Cannot have more than 5 arguments at any time
@@ -66,14 +67,13 @@ int main(int argc, char *argv[])
 		folderDecompress(args.folder_decompress_arg);
 		
 	}
-
-	//Treatment of unimplemented arguments.
-	if(args.compress_given)
+	
+	if(args.compress_arg)
 	{
-		printf("[TODO] option not implemented yet. \n");
-		exit(1);
+		compress(args.compress_arg);
 	}
 	
+	//Treatment of unimplemented arguments.
 	if (args.parallel_folder_compress_given)
 	{
 		printf("[TODO] option not implemented yet. \n");
