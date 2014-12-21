@@ -107,8 +107,8 @@ void decompress (char *filename, int function) {
 	//start decompression and write to file
 	write_to_file(words, filename, myFile, numberOfWords, function);
 	
-	int auxis = DICT;
-	for (auxis; auxis < numberOfWords+DICT; auxis++){
+	unsigned int auxis;
+	for (auxis = DICT; auxis < numberOfWords+DICT; auxis++){
 		FREE(words[auxis]);
 	}
 	FREE(words);

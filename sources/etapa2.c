@@ -17,6 +17,10 @@
 #include "memory.h"
 #include "listas.h"
 #include "hashtables.h"
+
+static int compare (const void *, const void *);
+
+
 /**
  * @brief Compresses a given file using PALZ.
  * @details A new file called <filename>.palz is created with the compressed text.  
@@ -90,7 +94,6 @@ void compress(char *filename) {
 		free(line);
 		free (arrayWords);
 		tabela_destruir(&words);
-		return 0;
 }
 
 static int compare (const void *p1, const void *p2) {
