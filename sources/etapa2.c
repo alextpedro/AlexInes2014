@@ -88,6 +88,8 @@ void compress(char *filename) {
 		}
 
 		//Fase 2
+		char *newFileName = NULL;
+		newFileName = get_palz_file_name(filename);
 
 		fclose(tmp);
 		fclose(text);
@@ -98,4 +100,23 @@ void compress(char *filename) {
 
 static int compare (const void *p1, const void *p2) {
 	return strcmp(* (char * const *) p1, * (char * const *) p2); //from man qsort
+}
+
+/**
+ * @brief Creates a filename with added .palz extension.
+ * @details Recives a filename and returns a new filename with the added .palz extension.
+ * 
+ * @param filename The original filename.
+ * @return Original filename with added .palz extension.
+ */
+char* get_palz_file_name(char* filename) {
+	char* workFileName = NULL;
+
+	//Add .palz extension
+	char buffer[256];
+	snprintf(buf, sizeof buf, "%s%s", filename, ".palz");
+
+	workFileName = buf;
+
+	return workFileName;
 }
