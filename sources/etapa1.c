@@ -267,8 +267,7 @@ int write_to_file (char** words, char *filename, FILE* compressed, unsigned int 
  * @return Returns 0 if succesful.
  */
 int folderDecompress (const char *dirname) {
-	printf("cheguei\n");
-	/*int function = 2;
+	int function = 2;
 	LISTA_GENERICA_T* listOfDir = lista_criar(NULL);
 	lista_inserir_inicio(listOfDir, strdup(dirname));
 
@@ -319,5 +318,5 @@ int folderDecompress (const char *dirname) {
 	}
 
 	lista_destruir(&listOfDir);
-	return 0;*/
+	return 0;
 }
