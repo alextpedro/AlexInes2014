@@ -7,31 +7,40 @@ package "palz"
 version "0.1"
 purpose "Program for the compression/decompression of binary palz files."
 
-#Options
-section "independent options"
-defgroup "independent"
-groupoption "decompress"	- "Descompress the given file.\n[use: --decompress myFile]" group="independent" string	optional typestr="<filename>" 
-
-groupoption "folder-decompress" - "Decompress all the .palz files in a folder.\n[use: --folder-decompress myFolder]" 
-group="independent" string optional typestr="<folder>"
-
-groupoption "compress" - "Compress the selected file.\n[use: --compress myFile]" group="independent" string	optional typestr="<filename>" 
-
 #ModeOptions
 
 section "mode options"
+
+#mode_decompress
+defmode "mode_decompress" modedesc="Descompress the given file.\n[use: --decompress myFile]"
+
+modeoption "decompress" - "Descompress the given file.\n[use: --decompress myFile]" mode="mode_decompress" string typestr="<filename>" optional 
+
+#mode_folder-decompress
+defmode "mode_simple_folder-decompress" modedesc="Decompress all the .palz files in a folder.\n[use: --folder-decompress myFolder]"
+
+modeoption "folder-decompress" - "Decompress all the .palz files in a folder.\n[use: --folder-decompress myFolder]" mode="mode_simple_folder-decompress" string typestr="<folder>" optional 
+
+
+#2etapa
+
+#mode_compress
+defmode "mode_compress" modedesc="ompress the selected file.\n[use: --compress myFile]"
+
+modeoption "compress" - "Decompress all the .palz files in a folder.\n[use: --folder-decompress myFolder]" mode="mode_compress" string typestr="<filename>" optional 
+
 
 #mode_folder_decompress
 defmode "mode_folder_decompress" modedesc="decompresses all files with extension .palz in a folder.\n[use: --parallel-folder-decompress myFolder --decompress-max-threads nthreads:]"
 
 modeoption "parallel-folder-decompress" - "parallel-folder-decompress" mode="mode_folder_decompress" string typestr="folder" required
 
-modeoption "decompress-max-threads" - "decompress-max-threads" mode="mode_folder_decompress" string required
+modeoption "decompress-max-threads" - "decompress-max-threads" mode="mode_folder_decompress" int required
 
 #mode_folder_compress
 defmode "mode_folder_compress" 
 modeoption "parallel-folder-compress" - "parallel-folder-compress" mode="mode_folder_compress" string required
 
-modeoption "compress-max-threads" - "compress-max-threads" mode="mode_folder_compress" string required
+modeoption "compress-max-threads" - "compress-max-threads" mode="mode_folder_compress" int required
 
 option "about" - "To know more about palz.\n[use: --about]" optional
