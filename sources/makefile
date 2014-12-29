@@ -9,7 +9,7 @@
 
 
 # Libraries to include (if any)
-LIBS=-lm #-pthread 
+LIBS=-lm -pthread 
 
 # Compiler flags
 CFLAGS=-Wall -W -Wmissing-prototypes
