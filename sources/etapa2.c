@@ -91,6 +91,29 @@ void compress(char *filename) {
 		char *newFileName = NULL;
 		newFileName = get_palz_file_name(filename);
 
+		printf("%s\n", newFileName);
+
+/*----------nao esta a funcionar----------*/
+
+		//write to a new file
+		FILE *outFile = NULL;
+		rewind(tmp);
+		outFile = fopen("test_1.txt.palz", "w");//nao deixa utilizar o newFileName, da segmentation fault
+
+		//write num elements
+		  //nelems
+		
+		//Copy from the temporary file to the permanent file
+		char buffer[8096];
+		int n;
+		while( (n=fread(buffer, 1, 8096, tmp)) > 0) {
+		 	fwrite(buffer, 1, n, outFile);
+		}
+		fflush(outFile);
+		fclose(outFile);
+			
+/*-----------------------------------------*/
+
 		fclose(tmp);
 		fclose(text);
 		free(line);
@@ -114,9 +137,9 @@ char* get_palz_file_name(char* filename) {
 
 	//Add .palz extension
 	char buffer[256];
-	snprintf(buf, sizeof buf, "%s%s", filename, ".palz");
+	snprintf(buffer, sizeof buffer, "%s%s", filename, ".palz");
 
-	workFileName = buf;
+	workFileName = buffer;
 
 	return workFileName;
 }

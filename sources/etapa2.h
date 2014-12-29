@@ -4,6 +4,6 @@
 #define ETAPA2_H
 
 void compress(char*);
-char* get_file_name(char*);
+char* get_palz_file_name(char*);
 
 #endif
