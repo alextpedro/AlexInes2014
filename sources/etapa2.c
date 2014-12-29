@@ -143,3 +143,19 @@ char* get_palz_file_name(char* filename) {
 
 	return workFileName;
 }
+
+void parallel_folder_decompress(char *filename, int numT){
+	printf("-------------------------------:\n");
+	printf("%s\n", filename);
+	printf("%d\n", numT);
+	printf("-------------------------------:\n");
+
+}
+
+void parallel_folder_compress(char *filename, int numT){
+	printf("-------------------------------:\n");
+	printf("%s\n", filename);
+	printf("%d\n", numT);
+	printf("-------------------------------:\n");
+
+}

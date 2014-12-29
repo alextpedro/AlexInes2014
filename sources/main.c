@@ -76,14 +76,12 @@ int main(int argc, char *argv[])
 	//Treatment of unimplemented arguments.
 	if (args.parallel_folder_compress_given)
 	{
-		printf("[TODO] option not implemented yet. \n");
-		exit(1);
+		parallel_folder_compress(args.parallel_folder_compress_arg, args.compress_max_threads_arg);
 	}
 
 	if (args.parallel_folder_decompress_given)
 	{
-		printf("[TODO] option not implemented yet. \n");
-		exit(1);
+		parallel_folder_decompress(args.parallel_folder_decompress_arg, args.decompress_max_threads_arg);
 	}
 
 	if (args.about_given)
