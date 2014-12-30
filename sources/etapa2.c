@@ -131,6 +131,7 @@ void compress(char *filename) {
 		  //nelems
 		
 		//Copy from the temporary file to the permanent file
+		//falta o \n em cada linha 
 		char buffer[8096];
 		int n;
 		while( (n=fread(buffer, 1, 8096, tmp)) > 0) {
@@ -201,12 +202,10 @@ void parallel_folder_decompress(char *filename, int numT){
 	    // Cria thread para executar o consumidor 
 		if ((errno = pthread_create(&tids[i], NULL, consumidor, &param)) != 0)
 			ERROR(C_ERRO_PTHREAD_CREATE, "pthread_create() failed!");
-		
-
-        //cenas a fazer
 	
 		//executar o folderDecompress 
 		folderDecompressThreads(filename, &param);
+		printf("Chegou aqui.\n");
 
 		/* Espera que todas as threads terminem */
 		for(i = 0; i < nthreads; i++) {
@@ -233,7 +232,7 @@ void parallel_folder_compress(char *filename, int numT){
 }
 
 int folderDecompressThreads (const char *dirname, PARAM_T *p) {
-	int function = 2;
+	//int function = 2;
 	LISTA_GENERICA_T* listOfDir = lista_criar(NULL);
 	lista_inserir_inicio(listOfDir, strdup(dirname));
 
@@ -304,7 +303,7 @@ int folderDecompressThreads (const char *dirname, PARAM_T *p) {
 				return;
 			}
 
-        /* Sai da seccao critica */	
+        // Sai da seccao critica 	
 		if ((errno = pthread_mutex_unlock(&(p->mutex))) != 0) {
 			WARNING("pthread_mutex_unlock() failed");
 			return;
@@ -321,27 +320,27 @@ void *produtor(PARAM_T *p, char * fullname )
 		return NULL;
 	}
 
-        /* Espera que o buffer tenha espaco disponivel */
+        // Espera que o buffer tenha espaco disponivel 
         while (p->total == p->max)
 			if ((errno = pthread_cond_wait(&(p->cond), &(p->mutex))) != 0) {
 				WARNING("pthread_cond_wait() failed");
 				return NULL;
 			}
 
-        /* Coloca um valor no buffer */
+        // Coloca um valor no buffer 
         p->buffer[p->index_escrita] = strdup(fullname);
         printf(">> %s\n", p->buffer[p->index_escrita]);
         p->index_escrita = (p->index_escrita + 1) % p->max;
         p->total++;
 
-        /* Notifica consumidores 'a espera */
+        // Notifica consumidores 'a espera 
         if (p->total == 1)
 			if ((errno = pthread_cond_broadcast(&(p->cond))) != 0) {
 				WARNING("pthread_cond_broadcast() failed");
 				return NULL;
 			}
 
-        /* Sai da seccao critica */	
+        // Sai da seccao critica 
 		if ((errno = pthread_mutex_unlock(&(p->mutex))) != 0) {
 			WARNING("pthread_mutex_unlock() failed");
 			return NULL;
@@ -361,7 +360,7 @@ void *consumidor(void *arg)
 			return NULL;
 		}
 
-        /* Espera que o buffer tenha dados */
+        // Espera que o buffer tenha dados 
         while (p->total == 0 && !p->stop)
 			if ((errno = pthread_cond_wait(&(p->cond), &(p->mutex))) != 0) {
 				WARNING("pthread_cond_wait() failed");
@@ -376,26 +375,26 @@ void *consumidor(void *arg)
 			break;
 		}			
 
-        /* Retira um valor no buffer */
+        // Retira um valor no buffer
 		char *path = p->buffer[p->index_leitura];
         p->index_leitura = (p->index_leitura + 1) % p->max;
         p->total--;
 
-        /* Notifica produtores 'a espera */
+        // Notifica produtores 'a espera 
         if (p->total == (p->max)-1)
 			if ((errno = pthread_cond_signal(&(p->cond))) != 0) {
 				WARNING("pthread_cond_signal() failed");
 				return NULL;
 			}
 
-        /* Sai da seccao critica */	
+        // Sai da seccao critica 
 		if ((errno = pthread_mutex_unlock(&(p->mutex))) != 0) {
 			WARNING("pthread_mutex_unlock() failed");
 			return NULL;
 		}
         printf("<< %s\n", path);
 
-        /* Adormece entre 0 a 4 segundos */
+        // Adormece entre 0 a 4 segundos 
         //sleep(random() % 5);
     }
     return NULL;
