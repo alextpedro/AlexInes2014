@@ -28,7 +28,7 @@ static int compare (const void *, const void *);
  * @param  *filename - File to compress.
  */
 void compress(char *filename) {
-		FILE *text = NULL;
+		FILE *originalFile = NULL;
 		char* line = NULL;
 		size_t len = 0;
 		char* token = NULL;
@@ -38,13 +38,13 @@ void compress(char *filename) {
 		ITERADOR_T* it;
 
 
-		text = fopen (filename, "r");
+		originalFile = fopen (filename, "r");
 		if (!text) 
 			ERROR(1, "fopen failed");
 		
 		words = tabela_criar(1024, (LIBERTAR_FUNC)free);
 
-		getline(&line, &len, text);
+		getline(&line, &len, originalFile);
 
 		token = strtok_r(line, " \n\t.,", &lastStop);
 
@@ -91,8 +91,12 @@ void compress(char *filename) {
 		char *newFileName = NULL;
 		newFileName = get_palz_file_name(filename);
 
+		FILE *newFile = NULL;
+		newFile = fopen(newFileName, "w");
+
 		fclose(tmp);
-		fclose(text);
+		fclose(newFile);
+		fclose(originalFile);
 		free(line);
 		free (arrayWords);
 		tabela_destruir(&words);
