@@ -108,13 +108,16 @@ void compress(char *filename) {
 		FILE* tmp = NULL;
 		tmp = tmpfile();
 
-		fputs("PALZ", tmp);
+		fputs("PALZ\n", tmp);
+		fprintf(tmp, "%d\n", nelems);
+		
 
 		for (ind = 0; ind < nelems; ind++) {
 			unsigned int* index = tabela_consultar(words, arrayWords[ind]); 
 			*index = ind+15;
 			printf("%s\n", arrayWords[ind]);
 			fputs(arrayWords[ind], tmp);
+			fputs("\n", tmp);
 		}
 
 		//Phase 2
@@ -138,11 +141,11 @@ void compress(char *filename) {
 		rewind(tmp);
 		  
 		//Copy from the temporary file to the permanent file
-		//falta o \n em cada linha 
+		//falta o \n em cada linha; Isso é porque o \n não é escrito pro ficheiro original.
 		char buffer[8096];
 		int n;
 		while( (n=fread(buffer, 1, 8096, tmp)) > 0) {
-		 	fwrite(buffer, 1, n, newFile);
+		 	fwrite(buffer, n, 1, newFile);
 		}
 		fflush(newFile);
 
