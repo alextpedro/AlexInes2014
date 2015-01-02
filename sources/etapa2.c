@@ -28,9 +28,7 @@
 #define C_ERRO_CONDITION_INIT           5
 #define C_ERRO_CONDITION_DESTROY        6
 
-static int compare (const void *, const void *);
-
-
+/*Structures*/
 typedef struct 
 {
     char **buffer;
@@ -43,16 +41,19 @@ typedef struct
     int stop;
 } PARAM_T;
 
+/*Prototypes*/
+static int compare (const void *, const void *);
 void *produtor(PARAM_T *p, char * fullname);
 void *consumidor(void *arg);
-
 int folderDecompressThreads (const char *dirname, PARAM_T *p);
+
+/*Functions*/
 
 /**
  * @brief Compresses a given file using PALZ.
  * @details A new file called <filename>.palz is created with the compressed text.  
  * 
- * @param  *filename - File to compress.
+ * @param  *filename - Name of the file to compress.
  */
 void compress(char *filename) {
 		FILE *originalFile = NULL;
@@ -116,14 +117,12 @@ void compress(char *filename) {
 			fputs(arrayWords[ind], tmp);
 		}
 
-		//Fase 2
-
+		//Phase 2
 		//Save original filename length
 		size_t originalFileLen = strlen(filename);
 
 		FILE *newFile = NULL;
 		newFile = fopen(strcat(filename, ".palz"), "w");
-
 		if (!newFile) 
 			ERROR(1, "fopen failed");	
 
@@ -131,24 +130,23 @@ void compress(char *filename) {
 		filename[originalFileLen] = '\0';
 		printf("Filename after cat %s\n", filename);
 
-		
+		//Replace text with numerical indexes
 
 /*----------nao esta a funcionar----------*/
 
 		//write to a new file
 		rewind(tmp);
 		  
-		
 		//Copy from the temporary file to the permanent file
 		//falta o \n em cada linha 
-		/*char buffer[8096];
+		char buffer[8096];
 		int n;
 		while( (n=fread(buffer, 1, 8096, tmp)) > 0) {
-		 	fwrite(buffer, 1, n, outFile);
+		 	fwrite(buffer, 1, n, newFile);
 		}
-		fflush(outFile);
-		fclose(outFile);*/
+		fflush(newFile);
 
+		//Clean up files and memory
 		fclose(tmp);
 		fclose(newFile);
 		fclose(originalFile);

@@ -8,4 +8,5 @@ char* get_palz_file_name(char*);
 void parallel_folder_decompress(char*, int);
 void parallel_folder_compress(char *, int);
 
+
 #endif
