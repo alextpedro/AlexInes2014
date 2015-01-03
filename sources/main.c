@@ -70,18 +70,17 @@ int main(int argc, char *argv[])
 	
 	if(args.compress_arg)
 	{
-		compress(args.compress_arg);
+		compress(args.compress_arg, 1);
 	}
 	
-	//Treatment of unimplemented arguments.
 	if (args.parallel_folder_compress_given)
 	{
-		parallel_folder_compress(args.parallel_folder_compress_arg, args.compress_max_threads_arg);
+		thread_main(args.parallel_folder_compress_arg, args.compress_max_threads_arg, compress, is_not_extension_palz);
 	}
 
 	if (args.parallel_folder_decompress_given)
 	{
-		parallel_folder_decompress(args.parallel_folder_decompress_arg, args.decompress_max_threads_arg);
+		thread_main(args.parallel_folder_decompress_arg, args.decompress_max_threads_arg, decompress, is_extension_palz);
 	}
 
 	if (args.about_given)
@@ -106,7 +105,9 @@ int main(int argc, char *argv[])
 	printf("Execution time:%lfs\n", total_op_time);
 
 	//End of Code
+	
 	cmdline_parser_free(&args);
+
 	return 0;
 }
 

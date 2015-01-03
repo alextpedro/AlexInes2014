@@ -119,9 +119,7 @@ int is_header_PALZ (const char *header_first_row) {
 	return (strcmp(header_first_row, "PALZ\n") == 0);		
 }
 
-int is_extension_palz (const char *fullfilename) {
-	return (strcmp(fullfilename, ".palz\n") == 0);		
-}
+
 
 /**
  * @brief Turns a number as string into a number that can be used as measure for the dictionary.

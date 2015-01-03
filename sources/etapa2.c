@@ -21,31 +21,10 @@
 #include <dirent.h>
 #include <pthread.h>
 
-#define C_ERRO_PTHREAD_CREATE           1
-#define C_ERRO_PTHREAD_JOIN             2
-#define C_ERRO_MUTEX_INIT               3
-#define C_ERRO_MUTEX_DESTROY            4
-#define C_ERRO_CONDITION_INIT           5
-#define C_ERRO_CONDITION_DESTROY        6
-
-/*Structures*/
-typedef struct 
-{
-    char **buffer;
-    int index_leitura;
-    int index_escrita;
-    int total;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-    int max;
-    int stop;
-} PARAM_T;
 
 /*Prototypes*/
 static int compare (const void *, const void *);
-void *produtor(PARAM_T *p, char * fullname);
-void *consumidor(void *arg);
-int folderDecompressThreads (const char *dirname, PARAM_T *p);
+void writeBinary(HASHTABLE_T* words, FILE* originalFile, FILE* tmp);
 
 /*Functions*/
 
@@ -55,7 +34,7 @@ int folderDecompressThreads (const char *dirname, PARAM_T *p);
  * 
  * @param  *filename - Name of the file to compress.
  */
-void compress(char *filename) {
+void compress(char *filename, int function) {
 		FILE *originalFile = NULL;
 		char* line = NULL;
 		size_t len = 0;
@@ -81,14 +60,27 @@ void compress(char *filename) {
 			if(tabela_consultar(words, token) == NULL) {
 				unsigned int* index = MALLOC(sizeof(unsigned int)); //freed in tabela_destruir
 				tabela_inserir(words, token, index);
-				DEBUG( "%s\n", token );
+				//DEBUG( "%s\n", token );
 			}
 	    
 	    	token = strtok_r(NULL, " \n\t.,", &lastStop);
 		}
 		int nelems;
 		nelems = tabela_numero_elementos(words);
-		printf("%d\n", nelems);
+		//printf("%d\n", nelems);
+
+		int numberOfElements = nelems + 14;
+		int numBytes = bytesForInt(numberOfElements);
+
+		if (numBytes > 3)
+		{
+				fprintf(stderr, "Failed: %s dictionary is too big\n", filename);
+				if(function ==1) {
+					exit(1);
+				} else {
+					return;
+				}
+		}
 
 		lista_aux = tabela_criar_lista_chaves(words);
 		it = lista_criar_iterador(lista_aux);
@@ -115,33 +107,34 @@ void compress(char *filename) {
 		for (ind = 0; ind < nelems; ind++) {
 			unsigned int* index = tabela_consultar(words, arrayWords[ind]); 
 			*index = ind+15;
-			printf("%s\n", arrayWords[ind]);
+			//printf("%s\n", arrayWords[ind]);
 			fputs(arrayWords[ind], tmp);
 			fputs("\n", tmp);
 		}
+
+		rewind(originalFile);
+		//Replace text with numerical indexes
+		writeBinary(words,originalFile,tmp);
 
 		//Phase 2
 		//Save original filename length
 		size_t originalFileLen = strlen(filename);
 
 		FILE *newFile = NULL;
-		newFile = fopen(strcat(filename, ".palz"), "w");
+		char *compressedFileName = (char*) MALLOC(sizeof(char)*(strlen(filename)*strlen(".palz")));
+		strcpy(compressedFileName,filename);
+		newFile = fopen(strcat(compressedFileName, ".palz"), "w");
 		if (!newFile) 
 			ERROR(1, "fopen failed");	
 
 		//Return filename to the original filename
 		filename[originalFileLen] = '\0';
-		printf("Filename after cat %s\n", filename);
+		//printf("Filename after cat %s\n", compressedFileName);
 
-		//Replace text with numerical indexes
-
-/*----------nao esta a funcionar----------*/
+		rewind(tmp);
 
 		//write to a new file
-		rewind(tmp);
-		  
 		//Copy from the temporary file to the permanent file
-		//falta o \n em cada linha; Isso é porque o \n não é escrito pro ficheiro original.
 		char buffer[8096];
 		int n;
 		while( (n=fread(buffer, 1, 8096, tmp)) > 0) {
@@ -153,8 +146,10 @@ void compress(char *filename) {
 		fclose(tmp);
 		fclose(newFile);
 		fclose(originalFile);
+		free(compressedFileName);
 		free(line);
 		free (arrayWords);
+		tabela_remover_todos(words);
 		tabela_destruir(&words);
 }
 
@@ -162,230 +157,153 @@ static int compare (const void *p1, const void *p2) {
 	return strcmp(* (char * const *) p1, * (char * const *) p2); //from man qsort
 }
 
-void parallel_folder_decompress(char *filename, int numT){
-	
-	int nthreads = numT;
-	PARAM_T param;
-	param.max = nthreads;
-	param.buffer = malloc(sizeof(char *) * param.max);
-	pthread_t tids[nthreads];
-	int i;
-	param.stop = 0;
+void writeBinary(HASHTABLE_T* words, FILE* originalFile, FILE* tmp){
+	int phrase = 0;
+	char* line = NULL;
+	size_t len = 0;
+	int i = 0;
+	char buffer[200];
+	int x = 0;
+	void * wordValue;
+	unsigned int binaryWord;
+	int numberOfElements = tabela_numero_elementos(words);
+	numberOfElements = numberOfElements+14;
+	int numBytes = bytesForInt(numberOfElements);
+	int lastSeparator = 0;
+	int numRep = 0;
 
-	  // Inicia o mutex 
-		if ((errno = pthread_mutex_init(&param.mutex, NULL)) != 0)
-			ERROR(C_ERRO_MUTEX_INIT, "pthread_mutex_init() failed!");
+	while((phrase=getline(&line,&len,originalFile)) != -1){
+		for(i=0;i<phrase;i++){
+			if (isSeparator(line[i]) != 0)//nao e separador
+			{
+				if (buffer[0] != '\0'){
+					writeRepetition(numRep,numBytes,tmp);
+					buffer[x] = '\0';
+					wordValue = tabela_consultar(words,buffer);
+					binaryWord = *((unsigned int *)wordValue);
+					fwrite(&binaryWord, numBytes, 1, tmp);
+					buffer[0]= '\0';
+					x = 0;
+					lastSeparator = 0;
+					numRep=0;
+				}
 
-	    // Inicia variavel de condicao 
-		if ((errno = pthread_cond_init(&param.cond, NULL)) != 0)
-			ERROR(C_ERRO_CONDITION_INIT, "pthread_cond_init() failed!");
+				if (lastSeparator == 0)
+					{
+						lastSeparator = separatorIndex(line[i]);
+						fwrite(&lastSeparator, numBytes,1 ,tmp);
+					}
+					else if(lastSeparator==separatorIndex(line[i])){
+						numRep++;
+						}else{
+							writeRepetition(numRep,numBytes,tmp);
+							lastSeparator = separatorIndex(line[i]);
+							fwrite(&lastSeparator, numBytes,1 ,tmp);
+							numRep = 0;
+						}
 
-	    // Inicia os restantes parametros a passar 'as threads 
-	    param.total = 0;
-	    param.index_escrita = 0;
-	    param.index_leitura = 0;
-
-	    
-
-	for(i = 0; i < nthreads; i++) 
-
-	    // Cria thread para executar o consumidor 
-		if ((errno = pthread_create(&tids[i], NULL, consumidor, &param)) != 0)
-			ERROR(C_ERRO_PTHREAD_CREATE, "pthread_create() failed!");
-	
-		//executar o folderDecompress 
-		folderDecompressThreads(filename, &param);
-		printf("Chegou aqui.\n");
-
-		/* Espera que todas as threads terminem */
-		for(i = 0; i < nthreads; i++) {
-			if ((errno = pthread_join(tids[i], NULL)) != 0)
-				ERROR(C_ERRO_PTHREAD_JOIN, "pthread_join() failed!");	
+			}
+			else
+			{
+				buffer[x] = line[i];
+				x++;
+			}
 		}
-			/* Destroi o mutex */
-			if ((errno = pthread_mutex_destroy(&param.mutex)) != 0)
-				ERROR(C_ERRO_MUTEX_DESTROY, "pthread_mutex_destroy() failed!");
-			
-			/* Destroi a condicao */
-			if ((errno = pthread_cond_destroy(&param.cond)) != 0)
-				ERROR(C_ERRO_CONDITION_DESTROY, "pthread_cond_destroy() failed!");
-	
 
+		if (buffer[0]=='\n')//comecar por espaço ou linha
+		{
+			writeRepetition(numRep,numBytes,tmp);
+		}
+
+		FREE(line);
+		line = NULL;
+	}
+	FREE(line);
+	writeRepetition(numRep,numBytes,tmp);
+
+	if (buffer[0] != '\0'){ //verificar se termina numa palavra
+		buffer[x] = '\0';
+		wordValue = tabela_consultar(words,buffer);
+		binaryWord = *((unsigned int *)wordValue);
+		fwrite(&binaryWord, numBytes, 1, tmp);
+		buffer[0]= '\0';
+		x = 0;
+		wordValue = NULL;
+	}
 }
 
-void parallel_folder_compress(char *filename, int numT){
-	printf("-------------------------------:\n");
-	printf("%s\n", filename);
-	printf("%d\n", numT);
-	printf("-------------------------------:\n");
-
-}
-
-int folderDecompressThreads (const char *dirname, PARAM_T *p) {
-	//int function = 2;
-	LISTA_GENERICA_T* listOfDir = lista_criar(NULL);
-	lista_inserir_inicio(listOfDir, strdup(dirname));
-
-	while (lista_numero_elementos(listOfDir) > 0) {
-		char *fdirname = lista_remover_inicio(listOfDir);
-		DIR *workdir = opendir(fdirname);
-		struct dirent *entry;
-
-		while ( ( entry = readdir(workdir) ) ) {
-			if( strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 )
-            	continue;
-
-        	char *fullname = MALLOC(strlen(dirname) + strlen(entry->d_name) + 2);
-
-        	sprintf(fullname, "%s/%s", dirname, entry->d_name);
-
-        	struct stat info;
-
-        	if( lstat(fullname, &info) != 0 ) {
-
-            WARNING("lstat() failed for item %s", fullname);
-            return -1;
-
-        	}
-
-	        if( S_ISDIR(info.st_mode) ) {
-
-	            lista_inserir_fim(listOfDir, strdup(fullname));
-
-				printf("--Folder!--\n");
-				
-	            //folderDecompress(fullname);
-
-	        } else {
-
-				/*if (is_extension_palz(fullname) == -1)
-				{
-					FREE(fullname);
-					continue;
-	               
-				}else{
-					printf("Decompress file %s\n", fullname);
-	            	decompress(fullname, function);
-				}*/
-	            	
-	            printf("%s\n", fullname);
-				produtor(p, fullname);
-		        
-        	}
-
-        	FREE(fullname);
-		}
-		closedir(workdir);
-		FREE(fdirname);
+void writeRepetition(int numRep, int numBytes,FILE* tmp){
+	int maxRep = (pow(256, numBytes)-1);
+	int valueR = 0;
+	//printf("%d\n", numRep);
+	while (numRep >= maxRep){
+		numRep = numRep- maxRep;
+		fwrite(&valueR,numBytes,1,tmp);
+		fwrite(&maxRep,numBytes,1,tmp);
 	}
 
-	lista_destruir(&listOfDir);
-
-	if ((errno = pthread_mutex_lock(&(p->mutex))) != 0) {
-		WARNING("pthread_mutex_lock() failed\n");
-		return;
+	if (numRep != 0)
+	{
+		fwrite(&valueR,numBytes,1,tmp);
+		fwrite(&numRep,numBytes,1,tmp);
 	}
+}
+/**
+ * @fnFunction Calculates the number of bytes necessary to store an int.
+ * @details The function receives an unsigned int and calculates the number of bytes necessary to represent it 
+ * 
+ * @param unsigned int The number you need to store.
+ * @return Returns the number of bytes necessary to store the parameter int.
+ */
+ //dado pelos profs
+int bytesForInt(unsigned int value) {
+	double nbytes = 1;
+	unsigned long long max = 256;
 
-	p->stop = 1;
-
-			if ((errno = pthread_cond_broadcast(&(p->cond))) != 0) {
-				WARNING("pthread_cond_broadcast() failed");
-				return;
-			}
-
-        // Sai da seccao critica 	
-		if ((errno = pthread_mutex_unlock(&(p->mutex))) != 0) {
-			WARNING("pthread_mutex_unlock() failed");
-			return;
-		}
-	
+	while(max<=value){
+		nbytes++;
+		max*=256;
+	}
+	 
+	return nbytes;
 }
 
-void *produtor(PARAM_T *p, char * fullname )
-{
-    //PARAM_T *p = (PARAM_T *) arg; 
-
-    if ((errno = pthread_mutex_lock(&(p->mutex))) != 0) {
-		WARNING("pthread_mutex_lock() failed\n");
-		return NULL;
+int isSeparator(char sp){
+	switch(sp){
+		case '\n': return 1;
+		case '\t': return 1;
+		case '\r': return 1;
+		case ' ': return 1;
+		case '?': return 1;
+		case '!': return 1;
+		case '.': return 1;
+		case ';': return 1;
+		case ',': return 1;
+		case ':': return 1;
+		case '+': return 1;
+		case '-': return 1;
+		case '*': return 1;
+		case '/': return 1;
+		default: return 0;
 	}
-
-        // Espera que o buffer tenha espaco disponivel 
-        while (p->total == p->max)
-			if ((errno = pthread_cond_wait(&(p->cond), &(p->mutex))) != 0) {
-				WARNING("pthread_cond_wait() failed");
-				return NULL;
-			}
-
-        // Coloca um valor no buffer 
-        p->buffer[p->index_escrita] = strdup(fullname);
-        printf(">> %s\n", p->buffer[p->index_escrita]);
-        p->index_escrita = (p->index_escrita + 1) % p->max;
-        p->total++;
-
-        // Notifica consumidores 'a espera 
-        if (p->total == 1)
-			if ((errno = pthread_cond_broadcast(&(p->cond))) != 0) {
-				WARNING("pthread_cond_broadcast() failed");
-				return NULL;
-			}
-
-        // Sai da seccao critica 
-		if ((errno = pthread_mutex_unlock(&(p->mutex))) != 0) {
-			WARNING("pthread_mutex_unlock() failed");
-			return NULL;
-		}
-
-    return NULL;
 }
 
-void *consumidor(void *arg) 
-{
-    PARAM_T *p = (PARAM_T *) arg; 
-
-    while(1) {
-
-		if ((errno = pthread_mutex_lock(&(p->mutex))) != 0) {
-			WARNING("pthread_mutex_lock() failed\n");
-			return NULL;
-		}
-
-        // Espera que o buffer tenha dados 
-        while (p->total == 0 && !p->stop)
-			if ((errno = pthread_cond_wait(&(p->cond), &(p->mutex))) != 0) {
-				WARNING("pthread_cond_wait() failed");
-				return NULL;
-			}
-
-		if(p->total == 0) {
-			if ((errno = pthread_mutex_unlock(&(p->mutex))) != 0) {
-				WARNING("pthread_mutex_unlock() failed");
-				return NULL;
-			}
-			break;
-		}			
-
-        // Retira um valor no buffer
-		char *path = p->buffer[p->index_leitura];
-        p->index_leitura = (p->index_leitura + 1) % p->max;
-        p->total--;
-
-        // Notifica produtores 'a espera 
-        if (p->total == (p->max)-1)
-			if ((errno = pthread_cond_signal(&(p->cond))) != 0) {
-				WARNING("pthread_cond_signal() failed");
-				return NULL;
-			}
-
-        // Sai da seccao critica 
-		if ((errno = pthread_mutex_unlock(&(p->mutex))) != 0) {
-			WARNING("pthread_mutex_unlock() failed");
-			return NULL;
-		}
-        printf("<< %s\n", path);
-
-        // Adormece entre 0 a 4 segundos 
-        //sleep(random() % 5);
-    }
-    return NULL;
+int separatorIndex(char sp){
+	switch(sp){
+		case '\n': return 1;
+		case '\t': return 2;
+		case '\r': return 3;
+		case ' ': return 4;
+		case '?': return 5;
+		case '!': return 6;
+		case '.': return 7;
+		case ';': return 8;
+		case ',': return 9;
+		case ':': return 10;
+		case '+': return 11;
+		case '-': return 12;
+		case '*': return 13;
+		case '/': return 14;
+		default: return 0;
+	}
 }

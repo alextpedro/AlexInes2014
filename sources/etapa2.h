@@ -3,10 +3,14 @@
 #ifndef ETAPA2_H
 #define ETAPA2_H
 
-void compress(char*);
+#include "common.h"
+
+void compress(char*, int);
 char* get_palz_file_name(char*);
-void parallel_folder_decompress(char*, int);
-void parallel_folder_compress(char *, int);
+int bytesForInt(unsigned int);
+int isSeparator(char);
+int separatorIndex(char);
+void writeRepetition(int, int,FILE*);
 
 
 #endif
