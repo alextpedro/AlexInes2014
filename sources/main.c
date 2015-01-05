@@ -68,16 +68,19 @@ int main(int argc, char *argv[])
 		
 	}
 	
+	//Simple single file compression
 	if(args.compress_arg)
 	{
 		compress(args.compress_arg, 1);
 	}
 	
+	//Parallel Folder compression
 	if (args.parallel_folder_compress_given)
 	{
 		thread_main(args.parallel_folder_compress_arg, args.compress_max_threads_arg, compress, is_not_extension_palz);
 	}
 
+	//Parallel Folder decompression
 	if (args.parallel_folder_decompress_given)
 	{
 		thread_main(args.parallel_folder_decompress_arg, args.decompress_max_threads_arg, decompress, is_extension_palz);

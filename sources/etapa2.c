@@ -60,14 +60,12 @@ void compress(char *filename, int function) {
 			if(tabela_consultar(words, token) == NULL) {
 				unsigned int* index = MALLOC(sizeof(unsigned int)); //freed in tabela_destruir
 				tabela_inserir(words, token, index);
-				//DEBUG( "%s\n", token );
 			}
 	    
 	    	token = strtok_r(NULL, " \n\t.,", &lastStop);
 		}
 		int nelems;
 		nelems = tabela_numero_elementos(words);
-		//printf("%d\n", nelems);
 
 		int numberOfElements = nelems + 14;
 		int numBytes = bytesForInt(numberOfElements);
@@ -129,8 +127,7 @@ void compress(char *filename, int function) {
 
 		//Return filename to the original filename
 		filename[originalFileLen] = '\0';
-		//printf("Filename after cat %s\n", compressedFileName);
-
+		
 		rewind(tmp);
 
 		//write to a new file
@@ -157,6 +154,15 @@ static int compare (const void *p1, const void *p2) {
 	return strcmp(* (char * const *) p1, * (char * const *) p2); //from man qsort
 }
 
+/**
+ * @brief writeBinary write binary code.
+ * @details writes the binary code associated with each word and each tab.
+ * 
+ * @param  words - hashtable of words present in the original file.
+ * @param  originalFile - original file, file given in compress function.
+ * @param  tmp - temporary file.
+ * 
+ */
 void writeBinary(HASHTABLE_T* words, FILE* originalFile, FILE* tmp){
 	int phrase = 0;
 	char* line = NULL;
@@ -174,7 +180,12 @@ void writeBinary(HASHTABLE_T* words, FILE* originalFile, FILE* tmp){
 
 	while((phrase=getline(&line,&len,originalFile)) != -1){
 		for(i=0;i<phrase;i++){
-			if (isSeparator(line[i]) != 0)//nao e separador
+			if (isSeparator(line[i]) == 0)//nao e separador
+			{
+				buffer[x] = line[i];
+				x++;
+			}
+			else
 			{
 				if (buffer[0] != '\0'){
 					writeRepetition(numRep,numBytes,tmp);
@@ -201,12 +212,6 @@ void writeBinary(HASHTABLE_T* words, FILE* originalFile, FILE* tmp){
 							fwrite(&lastSeparator, numBytes,1 ,tmp);
 							numRep = 0;
 						}
-
-			}
-			else
-			{
-				buffer[x] = line[i];
-				x++;
 			}
 		}
 
@@ -232,6 +237,15 @@ void writeBinary(HASHTABLE_T* words, FILE* originalFile, FILE* tmp){
 	}
 }
 
+/**
+ * @brief writeRepetition write repetitions.
+ * @details writes the repetitions the number of times that exists in the original file.
+ * 
+ * @param  numRep - number of repetitions.
+ * @param  numBytes - number of bytes necessary to store the parameter int.
+ * @param  tmp - temporary file.
+ * 
+ */
 void writeRepetition(int numRep, int numBytes,FILE* tmp){
 	int maxRep = (pow(256, numBytes)-1);
 	int valueR = 0;
@@ -248,6 +262,7 @@ void writeRepetition(int numRep, int numBytes,FILE* tmp){
 		fwrite(&numRep,numBytes,1,tmp);
 	}
 }
+
 /**
  * @fnFunction Calculates the number of bytes necessary to store an int.
  * @details The function receives an unsigned int and calculates the number of bytes necessary to represent it 
@@ -255,6 +270,7 @@ void writeRepetition(int numRep, int numBytes,FILE* tmp){
  * @param unsigned int The number you need to store.
  * @return Returns the number of bytes necessary to store the parameter int.
  */
+ 
  //dado pelos profs
 int bytesForInt(unsigned int value) {
 	double nbytes = 1;
@@ -268,6 +284,14 @@ int bytesForInt(unsigned int value) {
 	return nbytes;
 }
 
+/**
+ * @brief isSeparator checks it is a separator.
+ * @details The function receives an character and checks it is a separation.
+ * 
+ * @param  sp - character.
+ * 
+ * @return Returns 1 if the character is a separator, returns 0 if it is not.
+ */
 int isSeparator(char sp){
 	switch(sp){
 		case '\n': return 1;
@@ -288,6 +312,14 @@ int isSeparator(char sp){
 	}
 }
 
+/**
+ * @brief separatorIndex check separator index.
+ * @details The function receives a character and checks your index.
+ * 
+ * @param  sp - character.
+ * 
+ * @return Returns 0 if not exists, return the index of the separator
+ */
 int separatorIndex(char sp){
 	switch(sp){
 		case '\n': return 1;

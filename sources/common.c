@@ -60,11 +60,26 @@ float compression_ratio(float sizeOfCompressed, float sizeOfDecompressed) {
 	return ratio;
 }
 
+/**
+ * @brief is_extension_palz Checks if the file extension is palz
+ * @details Receives a filename and check if the extension is palz. 
+ * 
+ * @param *fullfilename filename
+ * @return Returns 0 if succesful.
+ */
+
 int is_extension_palz (const char *fullfilename) {
 	char *fileExt = strrchr(fullfilename, '.');
 	return fileExt!= NULL && strcasecmp(fileExt, ".palz") == 0;		
 }
 
+/**
+ * @brief is_not_extension_palz Checks if the file extension is palz
+ * @details Receives a filename and check if the extension is palz. 
+ * 
+ * @param *fullfilename filename
+ * @return Returns the negation of the function is_extension_palz
+ */
 int is_not_extension_palz (const char *fullfilename) {
 	return !is_extension_palz(fullfilename);		
 }
@@ -103,7 +118,6 @@ void thread_main(char *filename, int numT, void (*function)(char *, int), int(*e
 	
 		//executar o folderDecompress 
 		parallel_folder(filename, &param, extension);
-		//printf("Chegou aqui.\n");
 
 		/* Espera que todas as threads terminem */
 		for(i = 0; i < nthreads; i++) {
@@ -121,6 +135,14 @@ void thread_main(char *filename, int numT, void (*function)(char *, int), int(*e
 
 }
 
+/**
+ * @brief parallel_folder compress or decompress files in a folder.
+ * @details Receives a folder name and scans it looking for palz files. If it finds one it calls the decompression routine.
+ * 
+ * @param *dirname Name of the folder (directory).
+ * @param *p data structure
+ * @param *extension calls to function is_not_extension_palz ou is_extension_palz
+ */
 void parallel_folder (const char *dirname, PARAM_T *p, int(*extension)(char*)) {
 	
 	LISTA_GENERICA_T* listOfDir = lista_criar(NULL);
@@ -147,13 +169,13 @@ void parallel_folder (const char *dirname, PARAM_T *p, int(*extension)(char*)) {
             return;
 
         	}
-
+        	//test for a directory
 	        if( S_ISDIR(info.st_mode) ) {
 
 	            lista_inserir_fim(listOfDir, strdup(fullname));
 
 				printf("--Folder!--%s--\n",fullname);
-
+			//test for a file
 	        } else if(S_ISREG(info.st_mode)) {
 	            	
 	            printf("||%s\n", fullname);
